@@ -20,7 +20,7 @@ A lightweight, self-hosted web analytics tracker designed for simplicity and pri
 go build -o beep ./cmd/beep
 
 # Start server
-./beep serve --port 8080 --db tracker.db
+./beep serve --port 8080 --db beep.db
 
 # Generate API token
 ./beep generate-token
@@ -32,7 +32,7 @@ go build -o beep ./cmd/beep
 Add the tracking script to your website:
 
 ```html
-<script src="http://your-tracker-server:8080/track.js"></script>
+<script src="https://your-tracker-server/track.js" async></script>
 ```
 
 ## Documentation
@@ -81,13 +81,6 @@ Run the integration test (starts a real server):
 ```bash
 go test -v -run TestIntegration
 ```
-
-## Security
-
-- API endpoints require bearer token authentication
-- Token generation allows bootstrap when no tokens exist
-- Tokens are stored as hashes (not plaintext)
-- IP addresses can be filtered to exclude internal traffic
 
 ## Copyright and License
 

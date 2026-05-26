@@ -54,7 +54,7 @@ func (db *DB) GetAggregateStats(q StatsQuery) ([]models.StatsRow, error) {
 }
 
 func (db *DB) GetVerboseStats(q StatsQuery) ([]models.StatsRow, error) {
-	query := `SELECT s.domain, pv.ip, pv.country, pv.browser, pv.os, pv.path, pv.referrer, pv.created_at
+	query := `SELECT s.domain, pv.ip, pv.country, pv.region, pv.city, pv.browser, pv.os, pv.path, pv.referrer, pv.created_at
 	          FROM pageviews pv
 	          JOIN sites s ON pv.site_id = s.id
 	          WHERE pv.created_at >= ? AND pv.created_at <= ?`
@@ -76,7 +76,7 @@ func (db *DB) GetVerboseStats(q StatsQuery) ([]models.StatsRow, error) {
 	var results []models.StatsRow
 	for rows.Next() {
 		var r models.StatsRow
-		if err := rows.Scan(&r.Site, &r.IP, &r.Country, &r.Browser, &r.OS, &r.Path, &r.Referrer, &r.Time); err != nil {
+		if err := rows.Scan(&r.Site, &r.IP, &r.Country, &r.Region, &r.City, &r.Browser, &r.OS, &r.Path, &r.Referrer, &r.Time); err != nil {
 			return nil, err
 		}
 		results = append(results, r)

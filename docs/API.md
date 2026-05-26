@@ -275,6 +275,8 @@ Retrieve pageview statistics.
     "site": "example.com",
     "ip": "192.168.1.1",
     "country": "US",
+    "region": "California",
+    "city": "San Francisco",
     "browser": "Chrome",
     "os": "Windows",
     "path": "/page",

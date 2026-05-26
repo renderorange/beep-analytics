@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        if systemctl is-active --quiet beep.service; then
+            systemctl stop beep.service
+        fi
+        systemctl disable beep.service
+        ;;
+esac

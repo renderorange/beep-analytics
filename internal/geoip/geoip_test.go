@@ -4,7 +4,19 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
+
+func waitReady(t *testing.T, l *Lookup, timeout time.Duration) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	for !l.Ready() {
+		if time.Now().After(deadline) {
+			t.Fatal("timeout waiting for GeoIP to be ready")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
 
 func TestDisabledLookup(t *testing.T) {
 	l, err := New("")
@@ -80,6 +92,7 @@ func TestLookupIPFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("new lookup: %v", err)
 	}
+	waitReady(t, l, 5*time.Second)
 
 	tests := []struct {
 		ip      string
@@ -113,6 +126,7 @@ func TestLookupIPNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("new lookup: %v", err)
 	}
+	waitReady(t, l, 5*time.Second)
 
 	// IP not in any block
 	info := l.LookupIP("8.8.8.8")
@@ -128,6 +142,7 @@ func TestLookupIPInvalidIP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("new lookup: %v", err)
 	}
+	waitReady(t, l, 5*time.Second)
 
 	info := l.LookupIP("not-an-ip")
 	if info.Country != "" {
@@ -184,6 +199,7 @@ func TestLookupIPNoMatchingLocation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("new lookup: %v", err)
 	}
+	waitReady(t, l, 5*time.Second)
 
 	// Should return empty since location doesn't exist
 	info := l.LookupIP("192.168.1.100")

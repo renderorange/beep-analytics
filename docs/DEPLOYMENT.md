@@ -20,7 +20,26 @@ go build -o beep ./cmd/beep
 CGO_ENABLED=0 go build -ldflags="-s -w" -o beep ./cmd/beep
 ```
 
-This creates a statically-linked binary suitable for minimal containers.
+Differences from standard build:
+- `CGO_ENABLED=0` - Creates a statically-linked binary with no C dependencies
+- `-ldflags="-s -w"` - Strips debug symbols (`-s`) and DWARF info (`-w`), reducing binary size
+
+### Debian Package
+
+Build a `.deb` package:
+
+```bash
+./scripts/build-deb.sh
+```
+
+Produces `build/beep_<version>_amd64.deb`. Version is taken from the latest git tag, or defaults to `0.1.0`.
+
+Install:
+
+```bash
+sudo dpkg -i build/beep_0.1.0_amd64.deb
+sudo systemctl start beep
+```
 
 ### Cross-Compilation
 
@@ -51,11 +70,10 @@ Wants=network-online.target
 Type=simple
 User=beep
 Group=beep
-WorkingDirectory=/opt/beep
-ExecStart=/opt/beep/beep serve \
+ExecStart=/usr/bin/beep serve \
   --port 8080 \
-  --db /var/lib/beep/tracker.db \
-  --geoip /var/lib/beep/geoip
+  --db /var/lib/beep/beep.db \
+  --geoip /usr/share/GeoIP
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -66,7 +84,7 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
 ReadWritePaths=/var/lib/beep
-ReadOnlyPaths=/opt/beep
+ReadOnlyPaths=/usr/share/GeoIP
 
 [Install]
 WantedBy=multi-user.target
@@ -77,12 +95,11 @@ WantedBy=multi-user.target
 ```bash
 # Create user and directories
 sudo useradd -r -s /bin/false beep
-sudo mkdir -p /opt/beep /var/lib/beep
+sudo mkdir -p /var/lib/beep
 sudo chown beep:beep /var/lib/beep
 
 # Copy binary
-sudo cp beep /opt/beep/
-sudo chown beep:beep /opt/beep/beep
+sudo cp beep /usr/bin/
 
 # Enable and start service
 sudo systemctl daemon-reload
@@ -92,6 +109,39 @@ sudo systemctl start beep
 # Check status
 sudo systemctl status beep
 ```
+
+## SSL with Let's Encrypt
+
+### Install Certbot
+
+```bash
+# Debian/Ubuntu
+sudo apt install certbot python3-certbot-nginx
+
+# RHEL/CentOS/Fedora
+sudo dnf install certbot python3-certbot-nginx
+```
+
+### Obtain Certificate
+
+```bash
+sudo certbot --nginx -d analytics.example.com
+```
+
+Certbot will:
+1. Verify domain ownership via HTTP challenge
+2. Obtain the certificate
+3. Modify your Nginx config automatically
+
+### Manual Certificate (without auto-configure)
+
+```bash
+sudo certbot certonly --standalone -d analytics.example.com
+```
+
+Certificates are stored in `/etc/letsencrypt/live/analytics.example.com/`:
+- `fullchain.pem` - Full certificate chain
+- `privkey.pem` - Private key
 
 ## Nginx Reverse Proxy
 
@@ -186,6 +236,151 @@ http {
 }
 ```
 
+## Apache2 Reverse Proxy
+
+### Enable Required Modules
+
+```bash
+sudo a2enmod proxy proxy_http ssl headers rewrite expires
+sudo systemctl restart apache2
+```
+
+### Virtual Host Configuration
+
+Create `/etc/apache2/sites-available/beep.conf`:
+
+```apache
+<VirtualHost *:80>
+    ServerName analytics.example.com
+    Redirect permanent / https://analytics.example.com/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName analytics.example.com
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/analytics.example.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/analytics.example.com/privkey.pem
+
+    # Security headers
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Tracking endpoint
+    <Location /collect>
+        ProxyPass http://127.0.0.1:8080/collect
+        ProxyPassReverse http://127.0.0.1:8080/collect
+
+        # CORS headers
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "POST, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Content-Type"
+
+        # Handle OPTIONS preflight
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=204,L]
+    </Location>
+
+    # Tracking script
+    <Location /track.js>
+        ProxyPass http://127.0.0.1:8080/track.js
+        ProxyPassReverse http://127.0.0.1:8080/track.js
+
+        # Cache the tracking script
+        Header set Cache-Control "public, immutable"
+        ExpiresActive On
+        ExpiresDefault "access plus 1 hour"
+    </Location>
+
+    # API endpoints
+    <Location /api>
+        ProxyPass http://127.0.0.1:8080/api
+        ProxyPassReverse http://127.0.0.1:8080/api
+
+        # Restrict API access
+        Require ip 127.0.0.1
+        Require ip your-admin-ip
+    </Location>
+
+    # Deny everything else to API
+    <LocationMatch "^/api/">
+        Require ip 127.0.0.1
+    </LocationMatch>
+</VirtualHost>
+```
+
+### Enable the Site
+
+```bash
+sudo a2ensite beep.conf
+sudo systemctl reload apache2
+```
+
+### Rate Limiting
+
+Apache2 has two options for rate limiting:
+
+**Option 1: mod_ratelimit (bandwidth limiting)**
+
+```bash
+sudo a2enmod ratelimit
+sudo systemctl restart apache2
+```
+
+```apache
+<Location /collect>
+    SetOutputFilter RATE_LIMIT
+    SetEnv rate-limit 400
+    SetEnv rate-initial-burst 512
+</Location>
+```
+
+**Option 2: mod_evasive (request rate limiting, recommended)**
+
+```bash
+sudo apt install libapache2-mod-evasive
+```
+
+Create `/etc/apache2/mods-available/evasive.conf`:
+
+```apache
+<IfModule mod_evasive20.c>
+    DOSHashTableSize    3097
+    DOSPageCount        10
+    DOSSiteCount        50
+    DOSPageInterval     1
+    DOSSiteInterval     1
+    DOSBlockingPeriod   10
+    DOSLogDir           "/var/log/apache2/mod_evasive"
+</IfModule>
+```
+
+```bash
+sudo mkdir -p /var/log/apache2/mod_evasive
+sudo chown www-data:www-data /var/log/apache2/mod_evasive
+sudo a2enmod evasive
+sudo systemctl restart apache2
+```
+
+### Connection Limiting
+
+Enable `mod_reqtimeout` to prevent slowloris attacks:
+
+```bash
+sudo a2enmod reqtimeout
+sudo systemctl restart apache2
+```
+
+Default settings in `/etc/apache2/mods-available/reqtimeout.conf` are usually sufficient. To customize:
+
+```apache
+<IfModule mod_reqtimeout.c>
+    RequestReadTimeout header=20-40,MinRate=500 body=20,MinRate=500
+</IfModule>
+```
+
 ## GeoIP Setup
 
 ### Download GeoLite2 Database
@@ -194,63 +389,12 @@ http {
 2. Generate a license key
 3. Download the GeoLite2-City CSV format
 
-### Installation
+### Installation and Update Script
+
+The installation and update script is installed at `/usr/lib/beep/update-geoip.sh`.
 
 ```bash
-# Create directory
-sudo mkdir -p /var/lib/beep/geoip
-
-# Download and extract (replace with your download method)
-cd /tmp
-wget "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=YOUR_KEY&suffix=zip" -O geolite2.zip
-unzip geolite2.zip
-sudo cp GeoLite2-City_*/GeoLite2-City-Blocks.csv /var/lib/beep/geoip/
-sudo cp GeoLite2-City_*/GeoLite2-City-Locations-en.csv /var/lib/beep/geoip/
-
-# Set permissions
-sudo chown -R beep:beep /var/lib/beep/geoip
-```
-
-### Update Script
-
-Create `/opt/beep/update-geoip.sh`:
-
-```bash
-#!/bin/bash
-set -e
-
-LICENSE_KEY="YOUR_LICENSE_KEY"
-DOWNLOAD_URL="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${LICENSE_KEY}&suffix=zip"
-TMP_DIR=$(mktemp -d)
-
-# Download
-wget "$DOWNLOAD_URL" -O "$TMP_DIR/geolite2.zip"
-
-# Extract
-unzip "$TMP_DIR/geolite2.zip" -d "$TMP_DIR"
-
-# Find the extracted directory
-EXTRACTED_DIR=$(find "$TMP_DIR" -name "GeoLite2-City_*" -type d | head -1)
-
-# Stop service
-sudo systemctl stop beep
-
-# Update files
-sudo cp "$EXTRACTED_DIR/GeoLite2-City-Blocks.csv" /var/lib/beep/geoip/
-sudo cp "$EXTRACTED_DIR/GeoLite2-City-Locations-en.csv" /var/lib/beep/geoip/
-
-# Start service
-sudo systemctl start beep
-
-# Cleanup
-rm -rf "$TMP_DIR"
-
-echo "GeoIP database updated successfully"
-```
-
-Make executable:
-```bash
-chmod +x /opt/beep/update-geoip.sh
+GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep/update-geoip.sh >> /var/log/beep-geoip.log 2>&1
 ```
 
 ### Cron Job
@@ -258,7 +402,7 @@ chmod +x /opt/beep/update-geoip.sh
 Add to crontab for weekly updates:
 
 ```bash
-0 3 * * 0 /opt/beep/update-geoip.sh >> /var/log/beep-geoip.log 2>&1
+0 3 * * 0 GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep/update-geoip.sh >> /var/log/beep-geoip.log 2>&1
 ```
 
 ## Docker Deployment
@@ -280,15 +424,14 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates tzdata
 RUN adduser -D -g '' beep
 
-WORKDIR /app
-COPY --from=builder /app/beep .
+COPY --from=builder /app/beep /usr/bin/
 
 USER beep
 EXPOSE 8080
 
 VOLUME ["/data"]
-ENTRYPOINT ["./beep"]
-CMD ["serve", "--port", "8080", "--db", "/data/tracker.db"]
+ENTRYPOINT ["beep"]
+CMD ["serve", "--port", "8080", "--db", "/data/beep.db"]
 ```
 
 ### Docker Compose
@@ -302,13 +445,14 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - tracker-data:/data
-      - ./geoip:/geoip:ro
-    command: serve --port 8080 --db /data/tracker.db --geoip /geoip
+      - beep-data:/data
+      - geoip-data:/usr/share/GeoIP:ro
+    command: serve --port 8080 --db /data/beep.db --geoip /usr/share/GeoIP
     restart: unless-stopped
 
 volumes:
-  tracker-data:
+  beep-data:
+  geoip-data:
 ```
 
 ## Backup and Maintenance
@@ -317,42 +461,42 @@ volumes:
 
 ```bash
 # Backup SQLite database
-sqlite3 /var/lib/beep/tracker.db ".backup '/backup/tracker-$(date +%Y%m%d).db'"
+sqlite3 /var/lib/beep/beep.db ".backup '/backup/beep-$(date +%Y%m%d).db'"
 
 # Or use the .dump method
-sqlite3 /var/lib/beep/tracker.db ".dump" | gzip > "/backup/tracker-$(date +%Y%m%d).sql.gz"
+sqlite3 /var/lib/beep/beep.db ".dump" | gzip > "/backup/beep-$(date +%Y%m%d).sql.gz"
 ```
 
 ### Automated Backup Script
 
-Create `/opt/beep/backup.sh`:
+The backup script is installed at `/usr/lib/beep/backup.sh`:
 
 ```bash
 #!/bin/bash
 set -e
 
 BACKUP_DIR="/backup/beep"
-DB_PATH="/var/lib/beep/tracker.db"
+DB_PATH="/var/lib/beep/beep.db"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p "$BACKUP_DIR"
 
 # Create backup
-sqlite3 "$DB_PATH" ".backup '$BACKUP_DIR/tracker-$DATE.db'"
+sqlite3 "$DB_PATH" ".backup '$BACKUP_DIR/beep-$DATE.db'"
 
 # Compress
-gzip "$BACKUP_DIR/tracker-$DATE.db"
+gzip "$BACKUP_DIR/beep-$DATE.db"
 
 # Remove backups older than 30 days
-find "$BACKUP_DIR" -name "tracker-*.db.gz" -mtime +30 -delete
+find "$BACKUP_DIR" -name "beep-*.db.gz" -mtime +30 -delete
 
-echo "Backup completed: tracker-$DATE.db.gz"
+echo "Backup completed: beep-$DATE.db.gz"
 ```
 
 ### Cron Job for Backups
 
 ```bash
-0 2 * * * /opt/beep/backup.sh >> /var/log/beep-backup.log 2>&1
+0 2 * * * /usr/lib/beep/backup.sh >> /var/log/beep-backup.log 2>&1
 ```
 
 ## Monitoring
@@ -373,38 +517,14 @@ Monitor systemd journal:
 sudo journalctl -u beep -f
 ```
 
-### Resource Monitoring
-
-Monitor disk space for the database:
-
-```bash
-df -h /var/lib/beep
-```
-
 ## Security Considerations
-
-### Firewall
-
-```bash
-# Allow only necessary ports
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
-```
-
-### Token Security
-
-- Store tokens securely
-- Rotate tokens regularly
-- Use different tokens for different environments
-- Monitor token usage
 
 ### Database Security
 
 ```bash
 # Restrict database file permissions
-sudo chown beep:beep /var/lib/beep/tracker.db
-sudo chmod 600 /var/lib/beep/tracker.db
+sudo chown beep:beep /var/lib/beep/beep.db
+sudo chmod 600 /var/lib/beep/beep.db
 ```
 
 ## Performance Tuning
@@ -417,8 +537,6 @@ The application already sets:
 
 For high traffic, consider:
 - Regular `VACUUM` operations
-- Monitoring database size
-- Implementing data retention policies
 
 ### System Tuning
 
@@ -427,36 +545,3 @@ For high traffic, consider:
 echo "beep soft nofile 65536" >> /etc/security/limits.conf
 echo "beep hard nofile 65536" >> /etc/security/limits.conf
 ```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Permission denied on database**
-   ```bash
-   sudo chown beep:beep /var/lib/beep/tracker.db
-   ```
-
-2. **Service won't start**
-   ```bash
-   sudo journalctl -u beep -xe
-   ```
-
-3. **GeoIP not working**
-   - Check file permissions
-   - Verify CSV file format
-   - Check logs for loading errors
-
-### Debug Mode
-
-Currently, no debug mode is implemented. Check systemd logs for error messages.
-
-## Scaling Considerations
-
-For high-traffic deployments:
-
-1. **Load Balancing**: Use multiple instances behind a load balancer
-2. **Database**: Consider migrating to PostgreSQL for concurrent writes
-3. **Caching**: Add Redis for session/token caching
-4. **CDN**: Serve tracking script via CDN
-5. **Analytics Processing**: Implement background processing for statistics

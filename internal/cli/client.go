@@ -44,6 +44,8 @@ func (c *Client) do(method, path string, body interface{}) ([]byte, error) {
 			return nil, err
 		}
 		reqBody = bytes.NewReader(b)
+	} else if method == "POST" || method == "DELETE" {
+		reqBody = bytes.NewReader([]byte("{}"))
 	}
 
 	req, err := http.NewRequest(method, url, reqBody)
@@ -51,7 +53,7 @@ func (c *Client) do(method, path string, body interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	if body != nil {
+	if body != nil || method == "POST" || method == "DELETE" {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	if c.Token != "" {

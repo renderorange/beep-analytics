@@ -12,10 +12,10 @@ import (
 )
 
 type CollectRequest struct {
-	Origin string `json:"origin"`
-	Path   string `json:"path"`
+	Origin   string `json:"origin"`
+	Path     string `json:"path"`
 	Referrer string `json:"referrer"`
-	Screen string `json:"screen"`
+	Screen   string `json:"screen"`
 }
 
 func (s *Server) handleCollect(w http.ResponseWriter, r *http.Request) {

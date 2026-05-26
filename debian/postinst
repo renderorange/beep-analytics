@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+        # Create system user if it doesn't exist
+        if ! id -u beep > /dev/null 2>&1; then
+            adduser --system --group --no-create-home beep
+        fi
+
+        # Create data directory
+        mkdir -p /var/lib/beep
+        chown beep:beep /var/lib/beep
+        chmod 750 /var/lib/beep
+
+        # Ensure GeoIP directory exists
+        mkdir -p /usr/share/GeoIP
+
+        # Ensure script permissions
+        chown beep:beep /usr/lib/beep/update-geoip.sh /usr/lib/beep/backup.sh
+        chmod 755 /usr/lib/beep/update-geoip.sh /usr/lib/beep/backup.sh
+
+        # Reload systemd and enable service
+        systemctl daemon-reload
+        systemctl enable beep.service
+
+        echo "beep installed. Start with: systemctl start beep"
+        ;;
+esac

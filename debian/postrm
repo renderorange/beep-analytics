@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    remove)
+        # Keep /var/lib/beep on remove (user data)
+        ;;
+    purge)
+        # Remove data on purge
+        rm -rf /var/lib/beep
+        ;;
+esac

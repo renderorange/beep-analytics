@@ -120,15 +120,15 @@ func displayVerboseStats(data []byte, filterSite string) {
 		if showSite {
 			fmt.Printf("\n=== %s ===\n", site)
 		}
-		fmt.Printf("%-20s %-8s %-10s %-10s %-15s %-20s %s\n",
-			"IP", "Country", "Browser", "OS", "Path", "Referrer", "Time")
+		fmt.Printf("%-20s %-8s %-15s %-15s %-10s %-10s %-15s %-20s %s\n",
+			"IP", "Country", "Region", "City", "Browser", "OS", "Path", "Referrer", "Time")
 		for _, r := range rows {
 			time := r.Time
 			if len(time) > 19 {
 				time = time[:19]
 			}
-			fmt.Printf("%-20s %-8s %-10s %-10s %-15s %-20s %s\n",
-				r.IP, r.Country, r.Browser, r.OS, r.Path, truncateReferrer(r.Referrer), time)
+			fmt.Printf("%-20s %-8s %-15s %-15s %-10s %-10s %-15s %-20s %s\n",
+				r.IP, r.Country, r.Region, r.City, r.Browser, r.OS, r.Path, truncateReferrer(r.Referrer), time)
 		}
 	}
 }

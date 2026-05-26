@@ -64,6 +64,8 @@ type StatsRow struct {
 	Path     string `json:"path"`
 	Count    int    `json:"count,omitempty"`
 	Country  string `json:"country,omitempty"`
+	Region   string `json:"region,omitempty"`
+	City     string `json:"city,omitempty"`
 	Browser  string `json:"browser,omitempty"`
 	OS       string `json:"os,omitempty"`
 	Referrer string `json:"referrer,omitempty"`

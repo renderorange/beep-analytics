@@ -14,8 +14,8 @@ import (
 func cmdServe(args []string) {
 	fs := flag.NewFlagSet("serve", flag.ExitOnError)
 	port := fs.String("port", "8080", "Port to listen on")
-	dbPath := fs.String("db", "tracker.db", "Path to SQLite database")
-	geoipPath := fs.String("geoip", "", "Path to GeoLite2-City.mmdb (optional)")
+	dbPath := fs.String("db", "beep.db", "Path to SQLite database")
+	geoipPath := fs.String("geoip", "", "Path to GeoLite2 CSV directory (optional)")
 	fs.Parse(args)
 
 	database, err := db.Open(*dbPath)

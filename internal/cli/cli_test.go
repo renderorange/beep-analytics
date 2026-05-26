@@ -226,6 +226,26 @@ func TestParseGlobalFlagsWithRemaining(t *testing.T) {
 	}
 }
 
+func TestParseGlobalFlagsServerFromEnv(t *testing.T) {
+	os.Setenv("BEEP_SERVER", "http://env-server:9090")
+	defer os.Unsetenv("BEEP_SERVER")
+
+	server, _, _ := ParseGlobalFlags([]string{})
+	if server != "http://env-server:9090" {
+		t.Errorf("expected server from env, got %s", server)
+	}
+}
+
+func TestParseGlobalFlagsFlagOverridesEnv(t *testing.T) {
+	os.Setenv("BEEP_SERVER", "http://env-server:9090")
+	defer os.Unsetenv("BEEP_SERVER")
+
+	server, _, _ := ParseGlobalFlags([]string{"--server", "http://flag-server:8080"})
+	if server != "http://flag-server:8080" {
+		t.Errorf("expected flag to override env, got %s", server)
+	}
+}
+
 func TestTruncateReferrer(t *testing.T) {
 	tests := []struct {
 		input    string

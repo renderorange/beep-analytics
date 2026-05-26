@@ -16,10 +16,18 @@ All commands support these global options:
 ### Token Sources
 
 1. **Command-line flag**: `--token YOUR_TOKEN`
-2. **Environment variable**: `SMALLEST_TRACKER_TOKEN`
+2. **Environment variable**: `BEEP_TOKEN`
 3. **Config file**: `~/.config/beep/token`
 
 Priority order: command-line flag > environment variable > config file.
+
+### Server Location
+
+The server URL can be set via:
+- `--server URL`: Command-line flag
+- `BEEP_SERVER`: Environment variable
+
+Default: `http://localhost:8080`
 
 ### Initial Setup
 
@@ -39,7 +47,7 @@ Start the tracking server.
 
 **Options:**
 - `--port PORT`: Port to listen on (default: 8080)
-- `--db PATH`: Path to SQLite database (default: tracker.db)
+- `--db PATH`: Path to SQLite database (default: beep.db)
 - `--geoip PATH`: Path to GeoLite2-City directory (optional)
 
 **Example:**
@@ -155,8 +163,7 @@ Add an IP address to the ignore list.
 
 **Example:**
 ```bash
-./beep ignore-ip 192.168.1.1
-./beep ignore-ip 10.0.0.0/8  # Note: CIDR notation not supported
+./beep ignore-ip 192.168.1.1  # Note: CIDR notation not supported
 ```
 
 **Output:**
@@ -320,9 +327,9 @@ IP                   Path                 Count
 **Verbose Output:**
 ```
 === example.com ===
-IP                 Country  Browser    OS         Path            Referrer             Time
-192.168.1.1       US       Chrome     Windows    /               https://google.com   2024-01-01T12:00:00
-10.0.0.1          CA       Firefox    macOS      /about          (direct)             2024-01-01T11:30:00
+IP                 Country  Region           City             Browser    OS         Path            Referrer             Time
+192.168.1.1       US       California       San Francisco    Chrome     Windows    /               https://google.com   2024-01-01T12:00:00
+10.0.0.1          GB       England          London           Firefox    macOS      /about          (direct)             2024-01-01T11:30:00
 ```
 
 ## Configuration Examples
@@ -330,8 +337,8 @@ IP                 Country  Browser    OS         Path            Referrer      
 ### Using Environment Variables
 
 ```bash
-export SMALLEST_TRACKER_TOKEN="your-token-here"
-export SMALLEST_TRACKER_SERVER="http://analytics.example.com"
+export BEEP_TOKEN="your-token-here"
+export BEEP_SERVER="http://analytics.example.com"
 
 ./beep list-sites
 ```

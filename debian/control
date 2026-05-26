@@ -1,0 +1,9 @@
+Package: beep
+Version: 0.1.0
+Architecture: amd64
+Maintainer: Blaine Motsinger <blaine@renderorange.com>
+Depends: sqlite3
+Homepage: https://github.com/adventurehound/beep
+Description: Lightweight, self-hosted web analytics tracker
+ beep captures pageviews with no cookies and no personal data collection.
+ It provides a REST API for querying stats and a CLI for management.

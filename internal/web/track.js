@@ -1,6 +1,10 @@
 (function() {
+    var scripts = document.getElementsByTagName('script');
+    var src = scripts[scripts.length - 1].src;
+    var base = src.replace(/\/track\.js$/, '');
+
     var r = new XMLHttpRequest();
-    r.open('POST', '/collect', true);
+    r.open('POST', base + '/collect', true);
     r.setRequestHeader('Content-Type', 'application/json');
     r.send(JSON.stringify({
         origin: location.origin,
