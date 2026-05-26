@@ -541,8 +541,23 @@ The application already sets:
 - `PRAGMA foreign_keys = ON`
 - `MaxOpenConns = 1` (for SQLite compatibility)
 
-For high traffic, consider:
-- Regular `VACUUM` operations
+### Database VACUUM
+
+Over time, SQLite database fragmentation can degrade performance. Regular `VACUUM` reclaims space and defragments the database.
+
+**Manual VACUUM:**
+```bash
+sqlite3 /var/lib/beep/beep.db "VACUUM;"
+```
+
+**Automated weekly VACUUM via cron:**
+```bash
+0 4 * * 0 sqlite3 /var/lib/beep/beep.db "VACUUM;" >> /var/log/beep-vacuum.log 2>&1
+```
+
+VACUUM requires free disk space equal to the database size (it rebuilds the file). Run during low-traffic periods.
+
+### System Tuning
 
 ### System Tuning
 
