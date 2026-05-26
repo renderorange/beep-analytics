@@ -88,3 +88,7 @@ go test -v -run TestIntegration
 - Token generation allows bootstrap when no tokens exist
 - Tokens are stored as hashes (not plaintext)
 - IP addresses can be filtered to exclude internal traffic
+
+## Copyright and License
+
+`beep` is Copyright (c) 2026 Blaine Motsinger under the MIT license.
