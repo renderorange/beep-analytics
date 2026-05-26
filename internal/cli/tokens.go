@@ -8,6 +8,7 @@ import (
 )
 
 func CmdGenerateToken(args []string) {
+	checkHelp(args, "Usage: beep generate-token [--server URL] [--token TOKEN]")
 	server, token, _ := ParseGlobalFlags(args)
 
 	client := NewClient(server, token)
@@ -29,6 +30,7 @@ func CmdGenerateToken(args []string) {
 }
 
 func CmdRevokeToken(args []string) {
+	checkHelp(args, "Usage: beep revoke-token <id> [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 	if len(remaining) < 1 {
 		fmt.Fprintln(os.Stderr, "Usage: beep revoke-token <id> [--server URL] [--token TOKEN]")

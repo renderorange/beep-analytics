@@ -5,93 +5,87 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 )
 
-func TestVersionCommand(t *testing.T) {
-	cmd := exec.Command("go", "run", "./cmd/beep", "version")
+func beepCmd(t *testing.T, args ...string) (string, error) {
+	t.Helper()
+	cmd := exec.Command("go", append([]string{"run", "./cmd/beep"}, args...)...)
 	cmd.Dir = projectRoot()
-	cmd.Env = append(cmd.Env, "PATH=/usr/local/go/bin:"+os.Getenv("PATH"))
-	cmd.Env = append(cmd.Env, "HOME="+os.Getenv("HOME"))
-	cmd.Env = append(cmd.Env, "GOCACHE="+os.Getenv("GOCACHE"))
-	output, err := cmd.CombinedOutput()
+	cmd.Env = append(cmd.Env,
+		"PATH=/usr/local/go/bin:"+os.Getenv("PATH"),
+		"HOME="+os.Getenv("HOME"),
+		"GOCACHE="+os.Getenv("GOCACHE"),
+		"BEEP_SERVER=",
+		"BEEP_TOKEN=",
+	)
+	out, err := cmd.CombinedOutput()
+	return string(out), err
+}
+
+func TestVersionCommand(t *testing.T) {
+	out, err := beepCmd(t, "version")
 	if err != nil {
-		t.Fatalf("command failed: %v\n%s", err, output)
+		t.Fatalf("command failed: %v\n%s", err, out)
 	}
-	if string(output) != "beep v0.1.0\n" {
-		t.Errorf("unexpected output: %q", output)
+	if out != "beep v0.1.0\n" {
+		t.Errorf("unexpected output: %q", out)
 	}
 }
 
 func TestUsageOnNoArgs(t *testing.T) {
-	cmd := exec.Command("go", "run", "./cmd/beep")
-	cmd.Dir = projectRoot()
-	cmd.Env = append(cmd.Env, "PATH=/usr/local/go/bin:"+os.Getenv("PATH"))
-	cmd.Env = append(cmd.Env, "HOME="+os.Getenv("HOME"))
-	cmd.Env = append(cmd.Env, "GOCACHE="+os.Getenv("GOCACHE"))
-	err := cmd.Run()
+	_, err := beepCmd(t)
 	if err == nil {
 		t.Error("expected error exit code when no args provided")
 	}
 }
 
 func TestHelpCommand(t *testing.T) {
-	tests := []string{"help", "--help", "-h"}
-	for _, arg := range tests {
-		cmd := exec.Command("go", "run", "./cmd/beep", arg)
-		cmd.Dir = projectRoot()
-		cmd.Env = append(cmd.Env, "PATH=/usr/local/go/bin:"+os.Getenv("PATH"))
-		cmd.Env = append(cmd.Env, "HOME="+os.Getenv("HOME"))
-		cmd.Env = append(cmd.Env, "GOCACHE="+os.Getenv("GOCACHE"))
-		output, _ := cmd.CombinedOutput()
-		// help exits with code 1 (usage function calls os.Exit(1))
-		if !contains(string(output), "Usage:") {
-			t.Errorf("expected help output for %q, got %q", arg, output)
+	for _, arg := range []string{"help", "--help", "-h"} {
+		out, _ := beepCmd(t, arg)
+		if !strings.Contains(out, "Usage:") {
+			t.Errorf("expected help output for %q, got %q", arg, out)
 		}
 	}
 }
 
 func TestUnknownCommand(t *testing.T) {
-	cmd := exec.Command("go", "run", "./cmd/beep", "unknown")
-	cmd.Dir = projectRoot()
-	cmd.Env = append(cmd.Env, "PATH=/usr/local/go/bin:"+os.Getenv("PATH"))
-	cmd.Env = append(cmd.Env, "HOME="+os.Getenv("HOME"))
-	cmd.Env = append(cmd.Env, "GOCACHE="+os.Getenv("GOCACHE"))
-	output, err := cmd.CombinedOutput()
+	out, err := beepCmd(t, "unknown")
 	if err == nil {
 		t.Error("expected error exit code for unknown command")
 	}
-	if !contains(string(output), "Unknown command") {
-		t.Errorf("expected 'Unknown command' in output, got %q", output)
+	if !strings.Contains(out, "Unknown command") {
+		t.Errorf("expected 'Unknown command' in output, got %q", out)
 	}
 }
 
-func TestServeHelp(t *testing.T) {
-	cmd := exec.Command("go", "run", "./cmd/beep", "serve", "--help")
-	cmd.Dir = projectRoot()
-	cmd.Env = append(cmd.Env, "PATH=/usr/local/go/bin:"+os.Getenv("PATH"))
-	cmd.Env = append(cmd.Env, "HOME="+os.Getenv("HOME"))
-	cmd.Env = append(cmd.Env, "GOCACHE="+os.Getenv("GOCACHE"))
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Fatalf("serve --help failed: %v\n%s", err, output)
+func TestCommandHelp(t *testing.T) {
+	tests := []struct {
+		command string
+		want    string
+	}{
+		{"serve", "beep serve [--port"},
+		{"add-site", "beep add-site <domain>"},
+		{"remove-site", "beep remove-site <domain>"},
+		{"list-sites", "beep list-sites [--server"},
+		{"ignore-ip", "beep ignore-ip <ip>"},
+		{"unignore-ip", "beep unignore-ip <ip>"},
+		{"list-ignored", "beep list-ignored [--server"},
+		{"generate-token", "beep generate-token [--server"},
+		{"revoke-token", "beep revoke-token <id>"},
+		{"stats", "beep stats [--site"},
+		{"version", "beep version"},
 	}
-	if !contains(string(output), "port") {
-		t.Errorf("expected 'port' in serve help, got %q", output)
-	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsHelper(s, substr))
-}
-
-func containsHelper(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
+	for _, tt := range tests {
+		out, err := beepCmd(t, tt.command, "--help")
+		if err != nil {
+			t.Errorf("%s --help: unexpected exit code %v\n%s", tt.command, err, out)
+		}
+		if !strings.Contains(out, tt.want) {
+			t.Errorf("%s --help: expected %q in output, got %q", tt.command, tt.want, out)
 		}
 	}
-	return false
 }
 
 func projectRoot() string {

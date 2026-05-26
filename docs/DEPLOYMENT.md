@@ -12,12 +12,16 @@
 
 ```bash
 go build -o beep ./cmd/beep
+# or
+make build
 ```
 
 ### Production Build
 
 ```bash
 CGO_ENABLED=0 go build -ldflags="-s -w" -o beep ./cmd/beep
+# or
+make build
 ```
 
 Differences from standard build:
@@ -30,6 +34,8 @@ Build a `.deb` package:
 
 ```bash
 ./scripts/build-deb.sh
+# or
+make deb
 ```
 
 Produces `build/beep_<version>_amd64.deb`. Version is taken from the latest git tag, or defaults to `0.1.0`.

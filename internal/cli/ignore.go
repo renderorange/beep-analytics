@@ -7,6 +7,7 @@ import (
 )
 
 func CmdIgnoreIP(args []string) {
+	checkHelp(args, "Usage: beep ignore-ip <ip> [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 	if len(remaining) < 1 {
 		fmt.Fprintln(os.Stderr, "Usage: beep ignore-ip <ip> [--server URL] [--token TOKEN]")
@@ -25,6 +26,7 @@ func CmdIgnoreIP(args []string) {
 }
 
 func CmdUnignoreIP(args []string) {
+	checkHelp(args, "Usage: beep unignore-ip <ip> [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 	if len(remaining) < 1 {
 		fmt.Fprintln(os.Stderr, "Usage: beep unignore-ip <ip> [--server URL] [--token TOKEN]")
@@ -42,6 +44,7 @@ func CmdUnignoreIP(args []string) {
 }
 
 func CmdListIgnored(args []string) {
+	checkHelp(args, "Usage: beep list-ignored [--server URL] [--token TOKEN]")
 	server, token, _ := ParseGlobalFlags(args)
 
 	client := NewClient(server, token)

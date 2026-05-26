@@ -10,6 +10,7 @@ import (
 )
 
 func CmdStats(args []string) {
+	checkHelp(args, "Usage: beep stats [--site DOMAIN] [--last DURATION] [--from TIME] [--to TIME] [--verbose] [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 
 	var site, last, from, to string

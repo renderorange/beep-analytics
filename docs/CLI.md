@@ -4,9 +4,11 @@
 
 The `beep` command-line interface provides tools for managing sites, tokens, IP filters, and viewing statistics.
 
+All commands support `--help` (or `-h`) to display usage information.
+
 ## Global Options
 
-All commands support these global options:
+All commands support these global options, which can appear before or after the subcommand:
 
 - `--server URL`: API server URL (default: `http://localhost:8080`)
 - `--token TOKEN`: API token (or set via environment variable)
@@ -144,6 +146,8 @@ example.com
 blog.example.com
 ```
 
+When no sites are registered, outputs `No sites registered`.
+
 ### IP Filtering
 
 #### ignore-ip
@@ -218,6 +222,8 @@ List all ignored IP addresses.
 192.168.1.1
 10.0.0.1
 ```
+
+When no IPs are ignored, outputs `No IPs ignored`.
 
 ### Token Management
 
@@ -327,9 +333,9 @@ IP                   Path                 Count
 **Verbose Output:**
 ```
 === example.com ===
-IP                 Country  Region           City             Browser    OS         Path            Referrer             Time
-192.168.1.1       US       California       San Francisco    Chrome     Windows    /               https://google.com   2024-01-01T12:00:00
-10.0.0.1          GB       England          London           Firefox    macOS      /about          (direct)             2024-01-01T11:30:00
+IP                 Country  Region           City             Browser      OS           Path            Referrer             Time
+192.168.1.1       US       California       San Francisco    Chrome 120   Windows 10   /               https://google.com   2024-01-01T12:00:00
+10.0.0.1          GB       England          London           Firefox 120  macOS 14     /about          (direct)             2024-01-01T11:30:00
 ```
 
 ## Configuration Examples

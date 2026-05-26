@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -590,7 +591,10 @@ func TestRevokeNonexistentToken(t *testing.T) {
 	db := setupTestDB(t)
 
 	err := db.RevokeToken(999)
-	if err != nil {
-		t.Fatalf("revoke nonexistent token: %v", err)
+	if err == nil {
+		t.Fatal("expected error for nonexistent token")
+	}
+	if !errors.Is(err, ErrTokenNotFound) {
+		t.Errorf("expected ErrTokenNotFound, got %v", err)
 	}
 }

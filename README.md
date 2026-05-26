@@ -52,25 +52,13 @@ The system consists of:
 
 ## Testing
 
-Run all tests:
+Run all unit tests:
 
 ```bash
 go test ./...
 ```
 
-Run tests with verbose output:
-
-```bash
-go test ./... -v
-```
-
-Run a specific test:
-
-```bash
-go test ./... -run TestIntegration
-```
-
-Run tests for a specific package:
+Run a specific package's tests:
 
 ```bash
 go test ./internal/db -v
@@ -79,8 +67,16 @@ go test ./internal/db -v
 Run the integration test (starts a real server):
 
 ```bash
-go test -v -run TestIntegration
+go test -tags=integration -v ./tests/
 ```
+
+Run everything (fmt, vet, unit + integration):
+
+```bash
+make check
+```
+
+See the [Makefile](Makefile) for all available targets (`make`, `make build`, `make test`, `make test-integration`, etc.).
 
 ## Copyright and License
 

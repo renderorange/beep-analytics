@@ -53,6 +53,10 @@ func main() {
 	case "stats":
 		cmdStats(os.Args[2:])
 	case "version":
+		if len(os.Args) > 2 && (os.Args[2] == "--help" || os.Args[2] == "-h") {
+			fmt.Fprintln(os.Stderr, "Usage: beep version")
+			return
+		}
 		fmt.Println("beep v0.1.0")
 	case "help", "--help", "-h":
 		usage()

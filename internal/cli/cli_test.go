@@ -205,6 +205,10 @@ func TestParseGlobalFlags(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "default" {
+				os.Unsetenv("BEEP_SERVER")
+				os.Unsetenv("BEEP_TOKEN")
+			}
 			server, token, remaining := ParseGlobalFlags(tt.args)
 			if tt.expectedServer != "" && server != tt.expectedServer {
 				t.Errorf("expected server %s, got %s", tt.expectedServer, server)

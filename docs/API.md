@@ -45,7 +45,7 @@ Collects a pageview event. This endpoint is called by the tracking script.
 **Notes:**
 - The server extracts the domain from the Origin/Referer header
 - IP filtering is applied automatically
-- User agent is parsed from the request headers
+- User agent is parsed from the request headers, including browser and OS version numbers
 
 #### GET /track.js
 
@@ -218,6 +218,7 @@ Revoke an API token.
 - `204 No Content`: Token revoked
 - `400 Bad Request`: Invalid token ID
 - `401 Unauthorized`: Invalid or missing token
+- `404 Not Found`: Token ID does not exist
 
 #### GET /api/tokens
 
@@ -277,8 +278,8 @@ Retrieve pageview statistics.
     "country": "US",
     "region": "California",
     "city": "San Francisco",
-    "browser": "Chrome",
-    "os": "Windows",
+    "browser": "Chrome 120",
+    "os": "Windows 10",
     "path": "/page",
     "referrer": "https://google.com",
     "time": "2024-01-01T12:00:00Z"

@@ -12,6 +12,13 @@ import (
 )
 
 func cmdServe(args []string) {
+	for _, arg := range args {
+		if arg == "--help" || arg == "-h" {
+			fmt.Fprintln(os.Stderr, "Usage: beep serve [--port PORT] [--db PATH] [--geoip PATH]")
+			return
+		}
+	}
+
 	fs := flag.NewFlagSet("serve", flag.ExitOnError)
 	port := fs.String("port", "8080", "Port to listen on")
 	dbPath := fs.String("db", "beep.db", "Path to SQLite database")

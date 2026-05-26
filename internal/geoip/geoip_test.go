@@ -83,6 +83,7 @@ func TestEnabledLookup(t *testing.T) {
 	if !l.Enabled() {
 		t.Error("expected lookup to be enabled")
 	}
+	waitReady(t, l, 5*time.Second)
 }
 
 func TestLookupIPFound(t *testing.T) {

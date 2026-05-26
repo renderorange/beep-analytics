@@ -2,8 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/adventurehound/beep/internal/db"
 )
 
 func (s *Server) handleGenerateToken(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +32,11 @@ func (s *Server) handleRevokeToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.db.RevokeToken(id); err != nil {
-		http.Error(w, "failed to revoke token", http.StatusInternalServerError)
+		if errors.Is(err, db.ErrTokenNotFound) {
+			http.Error(w, "token not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "failed to revoke token", http.StatusInternalServerError)
+		}
 		return
 	}
 

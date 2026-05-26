@@ -4,10 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"github.com/adventurehound/beep/internal/models"
 )
+
+var ErrTokenNotFound = errors.New("token not found")
 
 func (db *DB) GenerateToken() (string, int64, error) {
 	// Generate random token
@@ -33,8 +36,18 @@ func (db *DB) GenerateToken() (string, int64, error) {
 }
 
 func (db *DB) RevokeToken(id int64) error {
-	_, err := db.conn.Exec("DELETE FROM tokens WHERE id = ?", id)
-	return err
+	result, err := db.conn.Exec("DELETE FROM tokens WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return ErrTokenNotFound
+	}
+	return nil
 }
 
 func (db *DB) ValidateToken(token string) (bool, error) {
