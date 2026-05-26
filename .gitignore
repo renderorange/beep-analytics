@@ -1,0 +1,7 @@
+*.back
+*.swp
+tmp/
+.env
+node_modules/
+coverage/
+/beep
