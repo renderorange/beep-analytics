@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/adventurehound/beep/internal/db"
+	"github.com/adventurehound/beep-analytics/internal/db"
 )
 
 func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {

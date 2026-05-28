@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/adventurehound/beep/internal/db"
+	"github.com/adventurehound/beep-analytics/internal/db"
 )
 
 func (s *Server) handleGenerateToken(w http.ResponseWriter, r *http.Request) {

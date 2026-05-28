@@ -6,11 +6,11 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 func CmdStats(args []string) {
-	checkHelp(args, "Usage: beep stats [--site DOMAIN] [--last DURATION] [--from TIME] [--to TIME] [--verbose] [--server URL] [--token TOKEN]")
+	checkHelp(args, "Usage: beep-analytics stats [--site DOMAIN] [--last DURATION] [--from TIME] [--to TIME] [--verbose] [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 
 	var site, last, from, to string

@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/adventurehound/beep/internal/api"
-	"github.com/adventurehound/beep/internal/cli"
-	"github.com/adventurehound/beep/internal/db"
-	"github.com/adventurehound/beep/internal/geoip"
+	"github.com/adventurehound/beep-analytics/internal/api"
+	"github.com/adventurehound/beep-analytics/internal/cli"
+	"github.com/adventurehound/beep-analytics/internal/db"
+	"github.com/adventurehound/beep-analytics/internal/geoip"
 )
 
 func cmdServe(args []string) {
 	for _, arg := range args {
 		if arg == "--help" || arg == "-h" {
-			fmt.Fprintln(os.Stderr, "Usage: beep serve [--port PORT] [--db PATH] [--geoip PATH]")
+			fmt.Fprintln(os.Stderr, "Usage: beep-analytics serve [--port PORT] [--db PATH] [--geoip PATH]")
 			return
 		}
 	}
 
 	fs := flag.NewFlagSet("serve", flag.ExitOnError)
 	port := fs.String("port", "8080", "Port to listen on")
-	dbPath := fs.String("db", "beep.db", "Path to SQLite database")
+	dbPath := fs.String("db", "beep-analytics.db", "Path to SQLite database")
 	geoipPath := fs.String("geoip", "", "Path to GeoLite2 CSV directory (optional)")
 	fs.Parse(args)
 

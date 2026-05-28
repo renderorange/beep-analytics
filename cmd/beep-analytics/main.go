@@ -6,7 +6,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, `Usage: beep <command> [options]
+	fmt.Fprintf(os.Stderr, `Usage: beep-analytics <command> [options]
 
 Commands:
   serve                Start the tracking server
@@ -21,7 +21,7 @@ Commands:
   stats                Show tracking stats
   version              Show version
 
-Run 'beep <command> --help' for command-specific help.
+Run 'beep-analytics <command> --help' for command-specific help.
 `)
 	os.Exit(1)
 }
@@ -54,10 +54,10 @@ func main() {
 		cmdStats(os.Args[2:])
 	case "version":
 		if len(os.Args) > 2 && (os.Args[2] == "--help" || os.Args[2] == "-h") {
-			fmt.Fprintln(os.Stderr, "Usage: beep version")
+			fmt.Fprintln(os.Stderr, "Usage: beep-analytics version")
 			return
 		}
-		fmt.Println("beep v0.1.0")
+		fmt.Println("beep-analytics v0.1.0")
 	case "help", "--help", "-h":
 		usage()
 	default:

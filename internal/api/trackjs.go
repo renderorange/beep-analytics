@@ -4,7 +4,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/adventurehound/beep/internal/web"
+	"github.com/adventurehound/beep-analytics/internal/web"
 )
 
 func (s *Server) handleTrackJS(w http.ResponseWriter, r *http.Request) {

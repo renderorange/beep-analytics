@@ -38,7 +38,7 @@ if [ -z "$EXTRACTED_DIR" ]; then
 fi
 
 # Stop service
-sudo systemctl stop beep
+sudo systemctl stop beep-analytics
 
 # Update files
 # Locations file
@@ -50,6 +50,6 @@ tail -n +2 "$EXTRACTED_DIR/GeoLite2-City-Blocks-IPv4.csv" | sudo tee -a /usr/sha
 tail -n +2 "$EXTRACTED_DIR/GeoLite2-City-Blocks-IPv6.csv" | sudo tee -a /usr/share/GeoIP/GeoLite2-City-Blocks.csv > /dev/null
 
 # Start service
-sudo systemctl start beep
+sudo systemctl start beep-analytics
 
 echo "GeoIP database updated successfully"

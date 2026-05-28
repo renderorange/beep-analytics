@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/adventurehound/beep/internal/models"
-	"github.com/adventurehound/beep/internal/ua"
+	"github.com/adventurehound/beep-analytics/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/ua"
 )
 
 type CollectRequest struct {

@@ -3,9 +3,9 @@ set -e
 
 case "$1" in
     remove|deconfigure)
-        if systemctl is-active --quiet beep.service; then
-            systemctl stop beep.service
+        if systemctl is-active --quiet beep-analytics.service; then
+            systemctl stop beep-analytics.service
         fi
-        systemctl disable beep.service
+        systemctl disable beep-analytics.service
         ;;
 esac

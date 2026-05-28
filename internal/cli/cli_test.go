@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 func TestNewClient(t *testing.T) {
@@ -44,7 +44,7 @@ func TestLoadTokenFromFile(t *testing.T) {
 
 	// Create temp config dir
 	tmpDir := t.TempDir()
-	configDir := filepath.Join(tmpDir, ".config", "beep")
+	configDir := filepath.Join(tmpDir, ".config", "beep-analytics")
 	os.MkdirAll(configDir, 0755)
 
 	// Write token file

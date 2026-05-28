@@ -12,7 +12,7 @@ else
     VERSION="0.1.0"
 fi
 ARCH="amd64"
-PACKAGE_NAME="beep"
+PACKAGE_NAME="beep-analytics"
 STAGING="$PROJECT_ROOT/build/${PACKAGE_NAME}_${VERSION}_${ARCH}"
 
 echo "Building ${PACKAGE_NAME} ${VERSION}..."
@@ -23,24 +23,24 @@ mkdir -p "$STAGING"
 
 # Build production binary
 echo "Compiling binary..."
-CGO_ENABLED=0 go build -ldflags="-s -w" -o "$STAGING/usr/bin/beep" "$PROJECT_ROOT/cmd/beep"
+CGO_ENABLED=0 go build -ldflags="-s -w" -o "$STAGING/usr/bin/beep-analytics" "$PROJECT_ROOT/cmd/beep-analytics"
 
 # Copy files to staging
 echo "Assembling package..."
 
 # Scripts
-mkdir -p "$STAGING/usr/lib/beep"
-cp "$PROJECT_ROOT/scripts/update-geoip.sh" "$STAGING/usr/lib/beep/"
-cp "$PROJECT_ROOT/scripts/backup.sh" "$STAGING/usr/lib/beep/"
+mkdir -p "$STAGING/usr/lib/beep-analytics"
+cp "$PROJECT_ROOT/scripts/update-geoip.sh" "$STAGING/usr/lib/beep-analytics/"
+cp "$PROJECT_ROOT/scripts/backup.sh" "$STAGING/usr/lib/beep-analytics/"
 
 # Systemd service
 mkdir -p "$STAGING/etc/systemd/system"
-cp "$SCRIPT_DIR/beep.service" "$STAGING/etc/systemd/system/"
+	cp "$SCRIPT_DIR/beep-analytics.service" "$STAGING/etc/systemd/system/"
 
 # Documentation
-mkdir -p "$STAGING/usr/share/doc/beep"
-cp "$PROJECT_ROOT/README.md" "$STAGING/usr/share/doc/beep/"
-cp "$PROJECT_ROOT/LICENSE" "$STAGING/usr/share/doc/beep/"
+mkdir -p "$STAGING/usr/share/doc/beep-analytics"
+cp "$PROJECT_ROOT/README.md" "$STAGING/usr/share/doc/beep-analytics/"
+cp "$PROJECT_ROOT/LICENSE" "$STAGING/usr/share/doc/beep-analytics/"
 
 # Debian control files
 mkdir -p "$STAGING/DEBIAN"
@@ -57,9 +57,9 @@ cp "$PROJECT_ROOT/debian/postrm" "$STAGING/DEBIAN/"
 # Set permissions
 chmod 755 "$STAGING/DEBIAN/postinst"
 chmod 755 "$STAGING/DEBIAN/prerm"
-chmod 755 "$STAGING/usr/bin/beep"
-chmod 755 "$STAGING/usr/lib/beep/update-geoip.sh"
-chmod 755 "$STAGING/usr/lib/beep/backup.sh"
+chmod 755 "$STAGING/usr/bin/beep-analytics"
+chmod 755 "$STAGING/usr/lib/beep-analytics/update-geoip.sh"
+chmod 755 "$STAGING/usr/lib/beep-analytics/backup.sh"
 
 # Build the deb package
 echo "Creating .deb package..."

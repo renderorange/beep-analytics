@@ -1,4 +1,4 @@
-# beep
+# beep-analytics
 
 A lightweight, self-hosted web analytics tracker designed for simplicity and privacy.
 
@@ -17,16 +17,16 @@ A lightweight, self-hosted web analytics tracker designed for simplicity and pri
 
 ```bash
 # Build
-go build -o beep ./cmd/beep
+go build -o beep-analytics ./cmd/beep-analytics
 
 # Start server
-./beep serve --port 8080 --db beep.db
+./beep-analytics serve --port 8080 --db beep-analytics.db
 
 # Generate API token
-./beep generate-token
+./beep-analytics generate-token
 
 # Register a site
-./beep add-site example.com
+./beep-analytics add-site example.com
 ```
 
 Add the tracking script to your website:
@@ -80,4 +80,4 @@ See the [Makefile](Makefile) for all available targets (`make`, `make build`, `m
 
 ## Copyright and License
 
-`beep` is Copyright (c) 2026 Blaine Motsinger under the MIT license.
+`beep-analytics` is Copyright (c) 2026 Blaine Motsinger under the MIT license.

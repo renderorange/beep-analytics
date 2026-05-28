@@ -11,7 +11,7 @@
 ### Standard Build
 
 ```bash
-go build -o beep ./cmd/beep
+go build -o beep-analytics ./cmd/beep-analytics
 # or
 make build
 ```
@@ -19,7 +19,7 @@ make build
 ### Production Build
 
 ```bash
-CGO_ENABLED=0 go build -ldflags="-s -w" -o beep ./cmd/beep
+CGO_ENABLED=0 go build -ldflags="-s -w" -o beep-analytics ./cmd/beep-analytics
 # or
 make build
 ```
@@ -38,47 +38,47 @@ Build a `.deb` package:
 make deb
 ```
 
-Produces `build/beep_<version>_amd64.deb`. Version is taken from the latest git tag, or defaults to `0.1.0`.
+Produces `build/beep-analytics_<version>_amd64.deb`. Version is taken from the latest git tag, or defaults to `0.1.0`.
 
 Install:
 
 ```bash
-sudo dpkg -i build/beep_0.1.0_amd64.deb
-sudo systemctl start beep
+sudo dpkg -i build/beep-analytics_0.1.0_amd64.deb
+sudo systemctl start beep-analytics
 ```
 
 ### Cross-Compilation
 
 ```bash
 # Linux AMD64
-GOOS=linux GOARCH=amd64 go build -o beep-linux-amd64 ./cmd/beep
+GOOS=linux GOARCH=amd64 go build -o beep-analytics-linux-amd64 ./cmd/beep
 
 # macOS ARM64
-GOOS=darwin GOARCH=arm64 go build -o beep-darwin-arm64 ./cmd/beep
+GOOS=darwin GOARCH=arm64 go build -o beep-analytics-darwin-arm64 ./cmd/beep
 
 # Windows AMD64
-GOOS=windows GOARCH=amd64 go build -o beep.exe ./cmd/beep
+GOOS=windows GOARCH=amd64 go build -o beep-analytics.exe ./cmd/beep
 ```
 
 ## Systemd Service
 
 ### Service File
 
-Create `/etc/systemd/system/beep.service`:
+Create `/etc/systemd/system/beep-analytics.service`:
 
 ```ini
 [Unit]
-Description=beep analytics server
+Description=beep-analytics server
 After=network.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=beep
-Group=beep
-ExecStart=/usr/bin/beep serve \
+User=beep-analytics
+Group=beep-analytics
+ExecStart=/usr/bin/beep-analytics serve \
   --port 8080 \
-  --db /var/lib/beep/beep.db \
+  --db /var/lib/beep-analytics/beep.db \
   --geoip /usr/share/GeoIP
 Restart=always
 RestartSec=5
@@ -89,7 +89,7 @@ StandardError=journal
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
-ReadWritePaths=/var/lib/beep
+ReadWritePaths=/var/lib/beep-analytics
 ReadOnlyPaths=/usr/share/GeoIP
 
 [Install]
@@ -100,20 +100,20 @@ WantedBy=multi-user.target
 
 ```bash
 # Create user and directories
-sudo useradd -r -s /bin/false beep
-sudo mkdir -p /var/lib/beep
-sudo chown beep:beep /var/lib/beep
+sudo useradd -r -s /bin/false beep-analytics
+sudo mkdir -p /var/lib/beep-analytics
+sudo chown beep:beep /var/lib/beep-analytics
 
 # Copy binary
-sudo cp beep /usr/bin/
+sudo cp beep-analytics /usr/bin/
 
 # Enable and start service
 sudo systemctl daemon-reload
-sudo systemctl enable beep
-sudo systemctl start beep
+sudo systemctl enable beep-analytics
+sudo systemctl start beep-analytics
 
 # Check status
-sudo systemctl status beep
+sudo systemctl status beep-analytics
 ```
 
 ## SSL with Let's Encrypt
@@ -253,7 +253,7 @@ sudo systemctl restart apache2
 
 ### Virtual Host Configuration
 
-Create `/etc/apache2/sites-available/beep.conf`:
+Create `/etc/apache2/sites-available/beep-analytics.conf`:
 
 ```apache
 <VirtualHost *:80>
@@ -320,7 +320,7 @@ Create `/etc/apache2/sites-available/beep.conf`:
 ### Enable the Site
 
 ```bash
-sudo a2ensite beep.conf
+sudo a2ensite beep-analytics.conf
 sudo systemctl reload apache2
 ```
 
@@ -365,7 +365,7 @@ Create `/etc/apache2/mods-available/evasive.conf`:
 
 ```bash
 sudo mkdir -p /var/log/apache2/mod_evasive
-sudo chown www-data:www-data /var/log/apache2/mod_evasive
+sudo chown wwwbeep-analytics-data:www-data /var/log/apache2/mod_evasive
 sudo a2enmod evasive
 sudo systemctl restart apache2
 ```
@@ -397,10 +397,10 @@ Default settings in `/etc/apache2/mods-available/reqtimeout.conf` are usually su
 
 ### Installation and Update Script
 
-The installation and update script is installed at `/usr/lib/beep/update-geoip.sh`.
+The installation and update script is installed at `/usr/lib/beep-analytics/update-geoip.sh`.
 
 ```bash
-GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep/update-geoip.sh >> /var/log/beep-geoip.log 2>&1
+GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep-analytics/update-geoip.sh >> /var/log/beep-analytics-geoip.log 2>&1
 ```
 
 ### Cron Job
@@ -408,7 +408,7 @@ GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep/update-geoip.sh 
 Add to crontab for weekly updates:
 
 ```bash
-0 3 * * 0 GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep/update-geoip.sh >> /var/log/beep-geoip.log 2>&1
+0 3 * * 0 GEOIP_ACCOUNT_ID=12345 GEOIP_LICENSE_KEY=your-key /usr/lib/beep-analytics/update-geoip.sh >> /var/log/beep-analytics-geoip.log 2>&1
 ```
 
 ## Docker Deployment
@@ -423,21 +423,21 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o beep ./cmd/beep
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o beep-analytics ./cmd/beep-analytics
 
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates tzdata
-RUN adduser -D -g '' beep
+RUN adduser -D -g '' beep-analytics
 
-COPY --from=builder /app/beep /usr/bin/
+COPY --from=builder /app/beep-analytics /usr/bin/
 
-USER beep
+USER beep-analytics
 EXPOSE 8080
 
 VOLUME ["/data"]
-ENTRYPOINT ["beep"]
-CMD ["serve", "--port", "8080", "--db", "/data/beep.db"]
+ENTRYPOINT ["beep-analytics"]
+CMD ["serve", "--port", "8080", "--db", "/data/beep-analytics.db"]
 ```
 
 ### Docker Compose
@@ -446,19 +446,19 @@ CMD ["serve", "--port", "8080", "--db", "/data/beep.db"]
 version: '3.8'
 
 services:
-  beep:
+  beep-analytics:
     build: .
     ports:
       - "8080:8080"
     volumes:
-      - beep-data:/data
-      - geoip-data:/usr/share/GeoIP:ro
-    command: serve --port 8080 --db /data/beep.db --geoip /usr/share/GeoIP
+      - beep-analyticsbeep-analytics-data:/data
+      - geoipbeep-analytics-data:/usr/share/GeoIP:ro
+    command: serve --port 8080 --db /data/beep-analytics.db --geoip /usr/share/GeoIP
     restart: unless-stopped
 
 volumes:
-  beep-data:
-  geoip-data:
+  beepbeep-analytics-data:
+  geoipbeep-analytics-data:
 ```
 
 ## Backup and Maintenance
@@ -467,42 +467,42 @@ volumes:
 
 ```bash
 # Backup SQLite database
-sqlite3 /var/lib/beep/beep.db ".backup '/backup/beep-$(date +%Y%m%d).db'"
+sqlite3 /var/lib/beep-analytics/beep.db ".backup '/backup/beep-analytics-$(date +%Y%m%d).db'"
 
 # Or use the .dump method
-sqlite3 /var/lib/beep/beep.db ".dump" | gzip > "/backup/beep-$(date +%Y%m%d).sql.gz"
+sqlite3 /var/lib/beep-analytics/beep.db ".dump" | gzip > "/backup/beep-analytics-$(date +%Y%m%d).sql.gz"
 ```
 
 ### Automated Backup Script
 
-The backup script is installed at `/usr/lib/beep/backup.sh`:
+The backup script is installed at `/usr/lib/beep-analytics/backup.sh`:
 
 ```bash
 #!/bin/bash
 set -e
 
-BACKUP_DIR="/backup/beep"
-DB_PATH="/var/lib/beep/beep.db"
+BACKUP_DIR="/backup/beep-analytics"
+DB_PATH="/var/lib/beep-analytics/beep.db"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p "$BACKUP_DIR"
 
 # Create backup
-sqlite3 "$DB_PATH" ".backup '$BACKUP_DIR/beep-$DATE.db'"
+sqlite3 "$DB_PATH" ".backup '$BACKUP_DIR/beep-analytics-$DATE.db'"
 
 # Compress
-gzip "$BACKUP_DIR/beep-$DATE.db"
+gzip "$BACKUP_DIR/beep-analytics-$DATE.db"
 
 # Remove backups older than 30 days
-find "$BACKUP_DIR" -name "beep-*.db.gz" -mtime +30 -delete
+find "$BACKUP_DIR" -name "beep-analytics-*.db.gz" -mtime +30 -delete
 
-echo "Backup completed: beep-$DATE.db.gz"
+echo "Backup completed: beep-analytics-$DATE.db.gz"
 ```
 
 ### Cron Job for Backups
 
 ```bash
-0 2 * * * /usr/lib/beep/backup.sh >> /var/log/beep-backup.log 2>&1
+0 2 * * * /usr/lib/beep-analytics/backup.sh >> /var/log/beep-analytics-backup.log 2>&1
 ```
 
 ## Monitoring
@@ -520,7 +520,7 @@ curl -f http://localhost:8080/track.js || echo "Service down"
 Monitor systemd journal:
 
 ```bash
-sudo journalctl -u beep -f
+sudo journalctl -u beep-analytics -f
 ```
 
 ## Security Considerations
@@ -529,8 +529,8 @@ sudo journalctl -u beep -f
 
 ```bash
 # Restrict database file permissions
-sudo chown beep:beep /var/lib/beep/beep.db
-sudo chmod 600 /var/lib/beep/beep.db
+sudo chown beep:beep /var/lib/beep-analytics/beep.db
+sudo chmod 600 /var/lib/beep-analytics/beep.db
 ```
 
 ## Performance Tuning
@@ -547,12 +547,12 @@ Over time, SQLite database fragmentation can degrade performance. Regular `VACUU
 
 **Manual VACUUM:**
 ```bash
-sqlite3 /var/lib/beep/beep.db "VACUUM;"
+sqlite3 /var/lib/beep-analytics/beep.db "VACUUM;"
 ```
 
 **Automated weekly VACUUM via cron:**
 ```bash
-0 4 * * 0 sqlite3 /var/lib/beep/beep.db "VACUUM;" >> /var/log/beep-vacuum.log 2>&1
+0 4 * * 0 sqlite3 /var/lib/beep-analytics/beep.db "VACUUM;" >> /var/log/beep-analytics-vacuum.log 2>&1
 ```
 
 VACUUM requires free disk space equal to the database size (it rebuilds the file). Run during low-traffic periods.
@@ -563,6 +563,6 @@ VACUUM requires free disk space equal to the database size (it rebuilds the file
 
 ```bash
 # Increase file descriptors
-echo "beep soft nofile 65536" >> /etc/security/limits.conf
-echo "beep hard nofile 65536" >> /etc/security/limits.conf
+echo "beep-analytics soft nofile 65536" >> /etc/security/limits.conf
+echo "beep-analytics hard nofile 65536" >> /etc/security/limits.conf
 ```

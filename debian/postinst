@@ -4,26 +4,26 @@ set -e
 case "$1" in
     configure)
         # Create system user if it doesn't exist
-        if ! id -u beep > /dev/null 2>&1; then
-            adduser --system --group --no-create-home beep
+        if ! id -u beep-analytics > /dev/null 2>&1; then
+            adduser --system --group --no-create-home beep-analytics
         fi
 
         # Create data directory
-        mkdir -p /var/lib/beep
-        chown beep:beep /var/lib/beep
-        chmod 750 /var/lib/beep
+        mkdir -p /var/lib/beep-analytics
+        chown beep-analytics:beep-analytics /var/lib/beep-analytics
+        chmod 750 /var/lib/beep-analytics
 
         # Ensure GeoIP directory exists
         mkdir -p /usr/share/GeoIP
 
         # Ensure script permissions
-        chown beep:beep /usr/lib/beep/update-geoip.sh /usr/lib/beep/backup.sh
-        chmod 755 /usr/lib/beep/update-geoip.sh /usr/lib/beep/backup.sh
+        chown beep-analytics:beep-analytics /usr/lib/beep-analytics/update-geoip.sh /usr/lib/beep-analytics/backup.sh
+        chmod 755 /usr/lib/beep-analytics/update-geoip.sh /usr/lib/beep-analytics/backup.sh
 
         # Reload systemd and enable service
         systemctl daemon-reload
-        systemctl enable beep.service
+        systemctl enable beep-analytics.service
 
-        echo "beep installed. Start with: systemctl start beep"
+        echo "beep-analytics installed. Start with: systemctl start beep-analytics"
         ;;
 esac

@@ -11,7 +11,7 @@ import (
 
 func beepCmd(t *testing.T, args ...string) (string, error) {
 	t.Helper()
-	cmd := exec.Command("go", append([]string{"run", "./cmd/beep"}, args...)...)
+	cmd := exec.Command("go", append([]string{"run", "./cmd/beep-analytics"}, args...)...)
 	cmd.Dir = projectRoot()
 	cmd.Env = append(cmd.Env,
 		"PATH=/usr/local/go/bin:"+os.Getenv("PATH"),
@@ -29,7 +29,7 @@ func TestVersionCommand(t *testing.T) {
 	if err != nil {
 		t.Fatalf("command failed: %v\n%s", err, out)
 	}
-	if out != "beep v0.1.0\n" {
+	if out != "beep-analytics v0.1.0\n" {
 		t.Errorf("unexpected output: %q", out)
 	}
 }
@@ -65,17 +65,17 @@ func TestCommandHelp(t *testing.T) {
 		command string
 		want    string
 	}{
-		{"serve", "beep serve [--port"},
-		{"add-site", "beep add-site <domain>"},
-		{"remove-site", "beep remove-site <domain>"},
-		{"list-sites", "beep list-sites [--server"},
-		{"ignore-ip", "beep ignore-ip <ip>"},
-		{"unignore-ip", "beep unignore-ip <ip>"},
-		{"list-ignored", "beep list-ignored [--server"},
-		{"generate-token", "beep generate-token [--server"},
-		{"revoke-token", "beep revoke-token <id>"},
-		{"stats", "beep stats [--site"},
-		{"version", "beep version"},
+		{"serve", "beep-analytics serve [--port"},
+		{"add-site", "beep-analytics add-site <domain>"},
+		{"remove-site", "beep-analytics remove-site <domain>"},
+		{"list-sites", "beep-analytics list-sites [--server"},
+		{"ignore-ip", "beep-analytics ignore-ip <ip>"},
+		{"unignore-ip", "beep-analytics unignore-ip <ip>"},
+		{"list-ignored", "beep-analytics list-ignored [--server"},
+		{"generate-token", "beep-analytics generate-token [--server"},
+		{"revoke-token", "beep-analytics revoke-token <id>"},
+		{"stats", "beep-analytics stats [--site"},
+		{"version", "beep-analytics version"},
 	}
 	for _, tt := range tests {
 		out, err := beepCmd(t, tt.command, "--help")

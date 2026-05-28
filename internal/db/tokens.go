@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 var ErrTokenNotFound = errors.New("token not found")

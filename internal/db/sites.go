@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 func (db *DB) AddSite(domain string) (*models.Site, error) {

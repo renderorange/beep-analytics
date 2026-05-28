@@ -1,15 +1,15 @@
 [Unit]
-Description=beep analytics server
+Description=beep-analytics server
 After=network.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=beep
-Group=beep
-ExecStart=/usr/bin/beep serve \
+User=beep-analytics
+Group=beep-analytics
+ExecStart=/usr/bin/beep-analytics serve \
   --port 8080 \
-  --db /var/lib/beep/beep.db \
+  --db /var/lib/beep-analytics/beep.db \
   --geoip /usr/share/GeoIP
 Restart=always
 RestartSec=5
@@ -20,7 +20,7 @@ StandardError=journal
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
-ReadWritePaths=/var/lib/beep
+ReadWritePaths=/var/lib/beep-analytics
 ReadOnlyPaths=/usr/share/GeoIP
 
 [Install]

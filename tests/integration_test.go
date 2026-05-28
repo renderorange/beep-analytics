@@ -15,8 +15,8 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
-	binaryPath := filepath.Join(t.TempDir(), "beep-test")
-	cmd := exec.Command("go", "build", "-o", binaryPath, "./cmd/beep")
+	binaryPath := filepath.Join(t.TempDir(), "beep-analytics-test")
+	cmd := exec.Command("go", "build", "-o", binaryPath, "./cmd/beep-analytics")
 	cmd.Dir = projectRoot()
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("build failed: %v\n%s", err, out)

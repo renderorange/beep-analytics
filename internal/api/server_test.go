@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/adventurehound/beep/internal/db"
-	"github.com/adventurehound/beep/internal/geoip"
+	"github.com/adventurehound/beep-analytics/internal/db"
+	"github.com/adventurehound/beep-analytics/internal/geoip"
 )
 
 func setupTestServer(t *testing.T) (*Server, *httptest.Server) {

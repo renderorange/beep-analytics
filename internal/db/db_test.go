@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 func setupTestDB(t *testing.T) *DB {

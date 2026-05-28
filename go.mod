@@ -1,4 +1,4 @@
-module github.com/adventurehound/beep
+module github.com/adventurehound/beep-analytics
 
 go 1.26.3
 

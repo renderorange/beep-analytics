@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 type StatsQuery struct {

@@ -4,6 +4,6 @@ tmp/
 .env
 node_modules/
 coverage/
-/beep
+/beep-analytics
 *.db
 build/

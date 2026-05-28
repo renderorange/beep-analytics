@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/adventurehound/beep/internal/models"
+	"github.com/adventurehound/beep-analytics/internal/models"
 )
 
 func (db *DB) InsertPageview(pv models.PageviewInput) error {

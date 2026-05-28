@@ -84,7 +84,7 @@ func LoadToken() string {
 	}
 
 	home, _ := os.UserHomeDir()
-	path := home + "/.config/beep/token"
+	path := home + "/.config/beep-analytics/token"
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return ""

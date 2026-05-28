@@ -12,10 +12,10 @@ type Site struct {
 }
 
 func CmdAddSite(args []string) {
-	checkHelp(args, "Usage: beep add-site <domain> [--server URL] [--token TOKEN]")
+	checkHelp(args, "Usage: beep-analytics add-site <domain> [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 	if len(remaining) < 1 {
-		fmt.Fprintln(os.Stderr, "Usage: beep add-site <domain> [--server URL] [--token TOKEN]")
+		fmt.Fprintln(os.Stderr, "Usage: beep-analytics add-site <domain> [--server URL] [--token TOKEN]")
 		os.Exit(1)
 	}
 	domain := remaining[0]
@@ -31,10 +31,10 @@ func CmdAddSite(args []string) {
 }
 
 func CmdRemoveSite(args []string) {
-	checkHelp(args, "Usage: beep remove-site <domain> [--server URL] [--token TOKEN]")
+	checkHelp(args, "Usage: beep-analytics remove-site <domain> [--server URL] [--token TOKEN]")
 	server, token, remaining := ParseGlobalFlags(args)
 	if len(remaining) < 1 {
-		fmt.Fprintln(os.Stderr, "Usage: beep remove-site <domain> [--server URL] [--token TOKEN]")
+		fmt.Fprintln(os.Stderr, "Usage: beep-analytics remove-site <domain> [--server URL] [--token TOKEN]")
 		os.Exit(1)
 	}
 	domain := remaining[0]
@@ -49,7 +49,7 @@ func CmdRemoveSite(args []string) {
 }
 
 func CmdListSites(args []string) {
-	checkHelp(args, "Usage: beep list-sites [--server URL] [--token TOKEN]")
+	checkHelp(args, "Usage: beep-analytics list-sites [--server URL] [--token TOKEN]")
 	server, token, _ := ParseGlobalFlags(args)
 
 	client := NewClient(server, token)

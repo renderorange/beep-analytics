@@ -1,7 +1,7 @@
 .PHONY: build test test-verbose check test-integration vet fmt coverage run clean deb
 
 build:
-	go build -o beep ./cmd/beep
+	go build -o beep-analytics ./cmd/beep-analytics
 
 test:
 	go test ./...
@@ -24,10 +24,10 @@ coverage:
 	go test -coverprofile=coverage/coverage.out ./... && go tool cover -html=coverage/coverage.out -o coverage/index.html
 
 run:
-	go run ./cmd/beep serve
+	go run ./cmd/beep-analytics serve
 
 clean:
-	rm -f beep coverage/coverage.out coverage/index.html
+	rm -f beep-analytics coverage/coverage.out coverage/index.html
 
 deb:
 	./scripts/build-deb.sh

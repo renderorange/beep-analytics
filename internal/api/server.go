@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/adventurehound/beep/internal/db"
-	"github.com/adventurehound/beep/internal/geoip"
+	"github.com/adventurehound/beep-analytics/internal/db"
+	"github.com/adventurehound/beep-analytics/internal/geoip"
 )
 
 type Server struct {
@@ -49,6 +49,6 @@ func (s *Server) registerRoutes() {
 }
 
 func (s *Server) ListenAndServe() error {
-	log.Printf("beep listening on %s", s.addr)
+	log.Printf("beep-analytics listening on %s", s.addr)
 	return http.ListenAndServe(s.addr, s.mux)
 }
