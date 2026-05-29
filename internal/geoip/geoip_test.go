@@ -48,13 +48,13 @@ func createTestCSVFiles(t *testing.T) string {
 
 	dir := t.TempDir()
 
-	// Create test locations CSV (needs at least 8 columns)
-	// Columns: geoname_id,locale_code,continent_code,continent_name,country_iso_code,country_name,subdivision_1_iso_code,subdivision_1_name
-	// Code uses: row[0]=id, row[4]=Country, row[5]=Region, row[7]=City
-	locationsCSV := "geoname_id,locale_code,continent_code,continent_name,country_iso_code,country_name,subdivision_1_iso_code,subdivision_1_name\n" +
-		"100,,NA,North America,US,United States,SF,San Francisco\n" +
-		"200,,EU,Europe,GB,United Kingdom,LND,London\n" +
-		"300,,EU,Europe,DE,Germany,,Berlin\n"
+	// Create test locations CSV (14 columns matching GeoLite2 format)
+	// Columns: geoname_id,locale_code,continent_code,continent_name,country_iso_code,country_name,subdivision_1_iso_code,subdivision_1_name,subdivision_2_iso_code,subdivision_2_name,city_name,metro_code,time_zone,is_in_european_union
+	// Code uses: row[0]=id, row[4]=Country, row[7]=Region, row[10]=City
+	locationsCSV := "geoname_id,locale_code,continent_code,continent_name,country_iso_code,country_name,subdivision_1_iso_code,subdivision_1_name,subdivision_2_iso_code,subdivision_2_name,city_name,metro_code,time_zone,is_in_european_union\n" +
+		"100,en,NA,North America,US,United States,CA,California,,,San Francisco,,,0\n" +
+		"200,en,EU,Europe,GB,United Kingdom,ENG,England,,,London,,Europe/London,0\n" +
+		"300,en,EU,Europe,DE,Germany,,,BE,Berlin,Berlin,,Europe/Berlin,0\n"
 	err := os.WriteFile(filepath.Join(dir, "GeoLite2-City-Locations-en.csv"), []byte(locationsCSV), 0644)
 	if err != nil {
 		t.Fatalf("write locations csv: %v", err)
@@ -101,9 +101,9 @@ func TestLookupIPFound(t *testing.T) {
 		region  string
 		city    string
 	}{
-		{"192.168.1.100", "US", "United States", "San Francisco"},
-		{"10.50.60.70", "GB", "United Kingdom", "London"},
-		{"172.20.30.40", "DE", "Germany", "Berlin"},
+		{"192.168.1.100", "US", "California", "San Francisco"},
+		{"10.50.60.70", "GB", "England", "London"},
+		{"172.20.30.40", "DE", "", "Berlin"},
 	}
 
 	for _, tt := range tests {

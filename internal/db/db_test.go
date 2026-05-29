@@ -25,6 +25,61 @@ func TestMigrate(t *testing.T) {
 	_ = db
 }
 
+func TestCityRoundTrip(t *testing.T) {
+	db := setupTestDB(t)
+
+	site, err := db.AddSite("example.com")
+	if err != nil {
+		t.Fatalf("add site: %v", err)
+	}
+
+	now := time.Now()
+	pv := models.PageviewInput{
+		SiteID:       site.ID,
+		Path:         "/",
+		Country:      "US",
+		Region:       "CA",
+		City:         "San Francisco",
+		Locality:     "Mission District",
+		IP:           "1.2.3.4",
+		Browser:      "Chrome",
+		OS:           "Windows",
+		UserAgent:    "Mozilla/5.0",
+		ScreenWidth:  1920,
+		ScreenHeight: 1080,
+	}
+
+	if err := db.InsertPageview(pv); err != nil {
+		t.Fatalf("insert pageview: %v", err)
+	}
+
+	q := StatsQuery{
+		SiteID: site.ID,
+		From:   now.Add(-time.Hour),
+		To:     now.Add(time.Hour),
+	}
+
+	rows, err := db.GetVerboseStats(q)
+	if err != nil {
+		t.Fatalf("get verbose stats: %v", err)
+	}
+
+	if len(rows) != 1 {
+		t.Fatalf("expected 1 row, got %d", len(rows))
+	}
+
+	r := rows[0]
+	if r.City != "San Francisco" {
+		t.Errorf("City = %q, want %q", r.City, "San Francisco")
+	}
+	if r.Country != "US" {
+		t.Errorf("Country = %q, want %q", r.Country, "US")
+	}
+	if r.Region != "CA" {
+		t.Errorf("Region = %q, want %q", r.Region, "CA")
+	}
+}
+
 func TestAddSite(t *testing.T) {
 	db := setupTestDB(t)
 	site, err := db.AddSite("example.com")

@@ -27,14 +27,14 @@ func (db *DB) GetAggregateStats(q StatsQuery) ([]models.StatsRow, error) {
 	          FROM pageviews pv
 	          JOIN sites s ON pv.site_id = s.id
 	          WHERE pv.created_at >= ? AND pv.created_at <= ?`
-	args := []interface{}{q.From.Format(time.RFC3339), q.To.Format(time.RFC3339)}
+	args := []interface{}{q.From.UTC().Format("2006-01-02 15:04:05"), q.To.UTC().Format("2006-01-02 15:04:05")}
 
 	if q.SiteID > 0 {
 		query += " AND pv.site_id = ?"
 		args = append(args, q.SiteID)
 	}
 
-	query += " GROUP BY s.domain, pv.ip, pv.path ORDER BY s.domain, count DESC"
+	query += " GROUP BY s.domain, pv.ip, pv.path ORDER BY s.domain, pv.path ASC"
 
 	rows, err := db.conn.Query(query, args...)
 	if err != nil {
@@ -58,14 +58,14 @@ func (db *DB) GetVerboseStats(q StatsQuery) ([]models.StatsRow, error) {
 	          FROM pageviews pv
 	          JOIN sites s ON pv.site_id = s.id
 	          WHERE pv.created_at >= ? AND pv.created_at <= ?`
-	args := []interface{}{q.From.Format(time.RFC3339), q.To.Format(time.RFC3339)}
+	args := []interface{}{q.From.UTC().Format("2006-01-02 15:04:05"), q.To.UTC().Format("2006-01-02 15:04:05")}
 
 	if q.SiteID > 0 {
 		query += " AND pv.site_id = ?"
 		args = append(args, q.SiteID)
 	}
 
-	query += " ORDER BY s.domain, pv.created_at DESC"
+	query += " ORDER BY s.domain, pv.path ASC, pv.created_at DESC"
 
 	rows, err := db.conn.Query(query, args...)
 	if err != nil {

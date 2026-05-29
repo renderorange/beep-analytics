@@ -108,7 +108,7 @@ func loadLocations(path string, locations map[int64]location) error {
 		if i == 0 {
 			continue // header
 		}
-		if len(row) < 8 {
+		if len(row) < 11 {
 			continue
 		}
 		geoID, err := strconv.ParseInt(row[0], 10, 64)
@@ -117,8 +117,8 @@ func loadLocations(path string, locations map[int64]location) error {
 		}
 		locations[geoID] = location{
 			Country: row[4],
-			Region:  row[5],
-			City:    row[7],
+			Region:  row[7],
+			City:    row[10],
 		}
 	}
 	return nil
