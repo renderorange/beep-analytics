@@ -252,9 +252,9 @@ Retrieve pageview statistics.
 
 **Query Parameters:**
 - `site` (optional): Filter by site domain
-- `from` (optional): Start date (YYYY-MM-DD format)
-- `to` (optional): End date (YYYY-MM-DD format)
-- `last` (optional): Relative time period (24h, 7d, 30d)
+- `from` (optional): Start date (YYYY-MM-DD). Without `to`, defaults to now.
+- `to` (optional): End date (YYYY-MM-DD). Without `from`, defaults to beginning of time.
+- `last` (optional): Relative time period (24h, 7d, 30d, 1mo, 3mo, 6mo)
 - `verbose` (optional): Set to "true" for detailed view
 
 **Response (Aggregate Mode):**
@@ -289,8 +289,10 @@ Retrieve pageview statistics.
 
 **Default Behavior:**
 - If no time parameters are provided, defaults to last 24 hours
+- If only `from` is provided, uses from that date to current time
+- If only `to` is provided, uses from earliest record to that date
 - If `from` and `to` are provided, uses that date range
-- If `last` is provided, uses relative time from now
+- If `last` is provided, uses relative time from now (overrides from/to)
 
 **Status Codes:**
 - `200 OK`: Statistics data

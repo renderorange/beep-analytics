@@ -26,8 +26,17 @@ func (db *DB) GetAggregateStats(q StatsQuery) ([]models.StatsRow, error) {
 	query := `SELECT s.domain, pv.ip, pv.path, COUNT(*) as count
 	          FROM pageviews pv
 	          JOIN sites s ON pv.site_id = s.id
-	          WHERE pv.created_at >= ? AND pv.created_at <= ?`
-	args := []interface{}{q.From.UTC().Format("2006-01-02 15:04:05"), q.To.UTC().Format("2006-01-02 15:04:05")}
+	          WHERE 1=1`
+	var args []interface{}
+
+	if !q.From.IsZero() {
+		query += " AND pv.created_at >= ?"
+		args = append(args, q.From.UTC().Format("2006-01-02 15:04:05"))
+	}
+	if !q.To.IsZero() {
+		query += " AND pv.created_at <= ?"
+		args = append(args, q.To.UTC().Format("2006-01-02 15:04:05"))
+	}
 
 	if q.SiteID > 0 {
 		query += " AND pv.site_id = ?"
@@ -57,8 +66,17 @@ func (db *DB) GetVerboseStats(q StatsQuery) ([]models.StatsRow, error) {
 	query := `SELECT s.domain, pv.ip, pv.country, pv.region, pv.city, pv.browser, pv.os, pv.path, pv.referrer, pv.created_at
 	          FROM pageviews pv
 	          JOIN sites s ON pv.site_id = s.id
-	          WHERE pv.created_at >= ? AND pv.created_at <= ?`
-	args := []interface{}{q.From.UTC().Format("2006-01-02 15:04:05"), q.To.UTC().Format("2006-01-02 15:04:05")}
+	          WHERE 1=1`
+	var args []interface{}
+
+	if !q.From.IsZero() {
+		query += " AND pv.created_at >= ?"
+		args = append(args, q.From.UTC().Format("2006-01-02 15:04:05"))
+	}
+	if !q.To.IsZero() {
+		query += " AND pv.created_at <= ?"
+		args = append(args, q.To.UTC().Format("2006-01-02 15:04:05"))
+	}
 
 	if q.SiteID > 0 {
 		query += " AND pv.site_id = ?"

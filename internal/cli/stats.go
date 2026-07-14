@@ -10,7 +10,23 @@ import (
 )
 
 func CmdStats(args []string) {
-	checkHelp(args, "Usage: beep-analytics stats [--site DOMAIN] [--last DURATION] [--from TIME] [--to TIME] [--verbose] [--server URL] [--token TOKEN]")
+	checkHelp(args, `Usage: beep-analytics stats [options]
+
+Options:
+  --site DOMAIN    Filter by site domain
+  --last PERIOD    Relative period: 24h, 7d, 30d, 1mo, 3mo, 6mo (default: 24h)
+  --from DATE      Start date (YYYY-MM-DD). Without --to, goes to now.
+  --to DATE        End date (YYYY-MM-DD). Without --from, goes from all time.
+  --verbose, -v    Show detailed view
+
+Examples:
+  beep-analytics stats                   Last 24 hours (default)
+  beep-analytics stats --last 7d         Last 7 days
+  beep-analytics stats --last 3mo        Last 3 months
+  beep-analytics stats --from 2024-01-01 From Jan 1 to now
+  beep-analytics stats --to 2024-06-01   All time up to June 1
+  beep-analytics stats --from 2024-01-01 --to 2024-06-01  Specific range
+  beep-analytics stats --site example.com --last 30d  Filter by site`)
 	server, token, remaining := ParseGlobalFlags(args)
 
 	var site, last, from, to string
@@ -41,6 +57,10 @@ func CmdStats(args []string) {
 		case "--verbose", "-v":
 			verbose = true
 		}
+	}
+
+	if last != "" && (from != "" || to != "") {
+		fmt.Fprintf(os.Stderr, "Warning: --last overrides --from/--to; only --last will be used\n")
 	}
 
 	params := url.Values{}
