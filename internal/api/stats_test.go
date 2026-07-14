@@ -70,6 +70,32 @@ func TestStatsEndpoint(t *testing.T) {
 	}
 }
 
+func TestStatsFromOnly(t *testing.T) {
+	_, ts := setupTestServer(t)
+	token := generateTestToken(t, ts)
+
+	req, _ := http.NewRequest("GET", ts.URL+"/api/stats?from=2024-01-01", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp.StatusCode != 200 {
+		t.Errorf("from only: expected 200, got %d", resp.StatusCode)
+	}
+	resp.Body.Close()
+}
+
+func TestStatsToOnly(t *testing.T) {
+	_, ts := setupTestServer(t)
+	token := generateTestToken(t, ts)
+
+	req, _ := http.NewRequest("GET", ts.URL+"/api/stats?to=2024-01-31", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp.StatusCode != 200 {
+		t.Errorf("to only: expected 200, got %d", resp.StatusCode)
+	}
+	resp.Body.Close()
+}
+
 func TestStatsDefaultTimeRange(t *testing.T) {
 	_, ts := setupTestServer(t)
 	token := generateTestToken(t, ts)
@@ -175,6 +201,32 @@ func TestStats30DayRange(t *testing.T) {
 	resp.Body.Close()
 }
 
+func TestStats1MonthRange(t *testing.T) {
+	_, ts := setupTestServer(t)
+	token := generateTestToken(t, ts)
+
+	req, _ := http.NewRequest("GET", ts.URL+"/api/stats?last=1mo", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp.StatusCode != 200 {
+		t.Errorf("1mo range: expected 200, got %d", resp.StatusCode)
+	}
+	resp.Body.Close()
+}
+
+func TestStats3MonthRange(t *testing.T) {
+	_, ts := setupTestServer(t)
+	token := generateTestToken(t, ts)
+
+	req, _ := http.NewRequest("GET", ts.URL+"/api/stats?last=3mo", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp.StatusCode != 200 {
+		t.Errorf("3mo range: expected 200, got %d", resp.StatusCode)
+	}
+	resp.Body.Close()
+}
+
 func TestStatsAllSites(t *testing.T) {
 	_, ts := setupTestServer(t)
 	token := generateTestToken(t, ts)
@@ -226,5 +278,80 @@ func TestStatsAllSites(t *testing.T) {
 	}
 	if !sites["example.com"] || !sites["other.com"] {
 		t.Errorf("expected both sites in results, got %v", sites)
+	}
+}
+
+func TestStatsTimeRangeReturnsData(t *testing.T) {
+	_, ts := setupTestServer(t)
+	token := generateTestToken(t, ts)
+
+	body := `{"domain":"example.com"}`
+	req, _ := http.NewRequest("POST", ts.URL+"/api/sites", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	http.DefaultClient.Do(req)
+
+	collectBody := `{"origin":"https://example.com","path":"/","referrer":"","screen":"1920x1080"}`
+	req, _ = http.NewRequest("POST", ts.URL+"/collect", strings.NewReader(collectBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Origin", "https://example.com")
+	http.DefaultClient.Do(req)
+
+	// Range that includes the data (last 24h)
+	req, _ = http.NewRequest("GET", ts.URL+"/api/stats?site=example.com&last=24h", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp.StatusCode != 200 {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+	var stats []struct {
+		Site string `json:"site"`
+		Path string `json:"path"`
+	}
+	json.NewDecoder(resp.Body).Decode(&stats)
+	resp.Body.Close()
+	if len(stats) == 0 {
+		t.Error("expected data in last 24h range, got empty")
+	}
+
+	// Range that excludes the data (year 2000)
+	req, _ = http.NewRequest("GET", ts.URL+"/api/stats?site=example.com&from=2000-01-01&to=2000-01-02", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, _ = http.DefaultClient.Do(req)
+	if resp.StatusCode != 200 {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+	json.NewDecoder(resp.Body).Decode(&stats)
+	resp.Body.Close()
+	if len(stats) != 0 {
+		t.Errorf("expected no data in year 2000 range, got %d rows", len(stats))
+	}
+}
+
+func TestStatsInvalidMoDuration(t *testing.T) {
+	_, ts := setupTestServer(t)
+	token := generateTestToken(t, ts)
+
+	tests := []struct {
+		name  string
+		query string
+	}{
+		{"bare mo", "last=mo"},
+		{"zero months", "last=0mo"},
+		{"negative months", "last=-1mo"},
+		{"uppercase Mo", "last=12Mo"},
+		{"overflow", "last=999999mo"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", ts.URL+"/api/stats?"+tt.query, nil)
+			req.Header.Set("Authorization", "Bearer "+token)
+			resp, _ := http.DefaultClient.Do(req)
+			if resp.StatusCode != 400 {
+				t.Errorf("%s: expected 400, got %d", tt.name, resp.StatusCode)
+			}
+			resp.Body.Close()
+		})
 	}
 }

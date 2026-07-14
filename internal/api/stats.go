@@ -2,7 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/adventurehound/beep-analytics/internal/db"
@@ -38,9 +41,22 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "invalid to date", http.StatusBadRequest)
 			return
 		}
-		to = to.Add(24*time.Hour - time.Second) // End of day
+		to = to.Add(24*time.Hour - time.Second)
+	} else if fromStr != "" {
+		from, err = time.Parse("2006-01-02", fromStr)
+		if err != nil {
+			http.Error(w, "invalid from date", http.StatusBadRequest)
+			return
+		}
+		to = time.Now()
+	} else if toStr != "" {
+		to, err = time.Parse("2006-01-02", toStr)
+		if err != nil {
+			http.Error(w, "invalid to date", http.StatusBadRequest)
+			return
+		}
+		to = to.Add(24*time.Hour - time.Second)
 	} else {
-		// Default to last 24 hours
 		to = time.Now()
 		from = to.Add(-24 * time.Hour)
 	}
@@ -90,6 +106,20 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseDuration(s string) (time.Duration, error) {
+	if strings.HasSuffix(s, "mo") && len(s) > 2 {
+		numStr := s[:len(s)-2]
+		n, err := strconv.Atoi(numStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid month duration: %s", s)
+		}
+		if n <= 0 {
+			return 0, fmt.Errorf("invalid month duration: %s", s)
+		}
+		if n > 3558 {
+			return 0, fmt.Errorf("month duration too large: %s", s)
+		}
+		return time.Duration(n) * 30 * 24 * time.Hour, nil
+	}
 	switch s {
 	case "24h":
 		return 24 * time.Hour, nil

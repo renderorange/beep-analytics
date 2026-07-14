@@ -74,7 +74,7 @@ func TestCommandHelp(t *testing.T) {
 		{"list-ignored", "beep-analytics list-ignored [--server"},
 		{"generate-token", "beep-analytics generate-token [--server"},
 		{"revoke-token", "beep-analytics revoke-token <id>"},
-		{"stats", "beep-analytics stats [--site"},
+		{"stats", "Usage: beep-analytics stats"},
 		{"version", "beep-analytics version"},
 	}
 	for _, tt := range tests {

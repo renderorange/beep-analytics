@@ -295,9 +295,9 @@ View pageview statistics.
 - `--server URL`: API server URL
 - `--token TOKEN`: API token
 - `--site DOMAIN`: Filter by site domain
-- `--last PERIOD`: Relative time period (24h, 7d, 30d)
-- `--from DATE`: Start date (YYYY-MM-DD)
-- `--to DATE`: End date (YYYY-MM-DD)
+- `--last PERIOD`: Relative time period (24h, 7d, 30d, 1mo, 3mo, 6mo)
+- `--from DATE`: Start date (YYYY-MM-DD). Without --to, goes from this date to now.
+- `--to DATE`:   End date (YYYY-MM-DD). Without --from, goes from all time to this date.
 - `--verbose`, `-v`: Show detailed view
 
 **Examples:**
@@ -309,8 +309,17 @@ View pageview statistics.
 # Last 7 days
 ./beep-analytics stats --last 7d
 
+# Last 3 months
+./beep-analytics stats --last 3mo
+
 # Specific date range
 ./beep-analytics stats --from 2024-01-01 --to 2024-01-31
+
+# From a date to now
+./beep-analytics stats --from 2024-06-01
+
+# All time up to a date
+./beep-analytics stats --to 2024-06-01
 
 # Filter by site
 ./beep-analytics stats --site example.com

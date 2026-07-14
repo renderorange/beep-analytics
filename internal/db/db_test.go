@@ -437,6 +437,44 @@ func TestGetAggregateStats(t *testing.T) {
 	}
 }
 
+func TestGetAggregateStatsFromOnly(t *testing.T) {
+	db := setupTestDB(t)
+	site, _ := db.AddSite("example.com")
+	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
+
+	q := StatsQuery{
+		SiteID: site.ID,
+		To:     time.Now().Add(time.Hour),
+	}
+
+	rows, err := db.GetAggregateStats(q)
+	if err != nil {
+		t.Fatalf("get aggregate stats with zero from: %v", err)
+	}
+	if len(rows) != 1 {
+		t.Errorf("expected 1 stat row, got %d", len(rows))
+	}
+}
+
+func TestGetAggregateStatsToOnly(t *testing.T) {
+	db := setupTestDB(t)
+	site, _ := db.AddSite("example.com")
+	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
+
+	q := StatsQuery{
+		SiteID: site.ID,
+		From:   time.Now().Add(-24 * time.Hour),
+	}
+
+	rows, err := db.GetAggregateStats(q)
+	if err != nil {
+		t.Fatalf("get aggregate stats with zero to: %v", err)
+	}
+	if len(rows) != 1 {
+		t.Errorf("expected 1 stat row, got %d", len(rows))
+	}
+}
+
 func TestGetAggregateStatsAllSites(t *testing.T) {
 	db := setupTestDB(t)
 
@@ -510,6 +548,44 @@ func TestGetVerboseStats(t *testing.T) {
 	}
 	if r.Path != "/" {
 		t.Errorf("expected path /, got %s", r.Path)
+	}
+}
+
+func TestGetVerboseStatsFromOnly(t *testing.T) {
+	db := setupTestDB(t)
+	site, _ := db.AddSite("example.com")
+	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
+
+	q := StatsQuery{
+		SiteID: site.ID,
+		To:     time.Now().Add(time.Hour),
+	}
+
+	rows, err := db.GetVerboseStats(q)
+	if err != nil {
+		t.Fatalf("get verbose stats with zero from: %v", err)
+	}
+	if len(rows) != 1 {
+		t.Errorf("expected 1 row, got %d", len(rows))
+	}
+}
+
+func TestGetVerboseStatsToOnly(t *testing.T) {
+	db := setupTestDB(t)
+	site, _ := db.AddSite("example.com")
+	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
+
+	q := StatsQuery{
+		SiteID: site.ID,
+		From:   time.Now().Add(-24 * time.Hour),
+	}
+
+	rows, err := db.GetVerboseStats(q)
+	if err != nil {
+		t.Fatalf("get verbose stats with zero to: %v", err)
+	}
+	if len(rows) != 1 {
+		t.Errorf("expected 1 row, got %d", len(rows))
 	}
 }
 
