@@ -74,26 +74,68 @@ func TestStatsFromOnly(t *testing.T) {
 	_, ts := setupTestServer(t)
 	token := generateTestToken(t, ts)
 
-	req, _ := http.NewRequest("GET", ts.URL+"/api/stats?from=2024-01-01", nil)
+	body := `{"domain":"example.com"}`
+	req, _ := http.NewRequest("POST", ts.URL+"/api/sites", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	http.DefaultClient.Do(req)
+
+	collectBody := `{"origin":"https://example.com","path":"/","referrer":"","screen":"1920x1080"}`
+	req, _ = http.NewRequest("POST", ts.URL+"/collect", strings.NewReader(collectBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Origin", "https://example.com")
+	http.DefaultClient.Do(req)
+
+	req, _ = http.NewRequest("GET", ts.URL+"/api/stats?from=2000-01-01", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	resp, _ := http.DefaultClient.Do(req)
 	if resp.StatusCode != 200 {
-		t.Errorf("from only: expected 200, got %d", resp.StatusCode)
+		t.Fatalf("from only: expected 200, got %d", resp.StatusCode)
 	}
+
+	var stats []struct {
+		Site string `json:"site"`
+		Path string `json:"path"`
+	}
+	json.NewDecoder(resp.Body).Decode(&stats)
 	resp.Body.Close()
+	if len(stats) == 0 {
+		t.Error("expected data with from-only filter, got empty")
+	}
 }
 
 func TestStatsToOnly(t *testing.T) {
 	_, ts := setupTestServer(t)
 	token := generateTestToken(t, ts)
 
-	req, _ := http.NewRequest("GET", ts.URL+"/api/stats?to=2024-01-31", nil)
+	body := `{"domain":"example.com"}`
+	req, _ := http.NewRequest("POST", ts.URL+"/api/sites", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	http.DefaultClient.Do(req)
+
+	collectBody := `{"origin":"https://example.com","path":"/","referrer":"","screen":"1920x1080"}`
+	req, _ = http.NewRequest("POST", ts.URL+"/collect", strings.NewReader(collectBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Origin", "https://example.com")
+	http.DefaultClient.Do(req)
+
+	req, _ = http.NewRequest("GET", ts.URL+"/api/stats?to=2099-01-01", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	resp, _ := http.DefaultClient.Do(req)
 	if resp.StatusCode != 200 {
-		t.Errorf("to only: expected 200, got %d", resp.StatusCode)
+		t.Fatalf("to only: expected 200, got %d", resp.StatusCode)
 	}
+
+	var stats []struct {
+		Site string `json:"site"`
+		Path string `json:"path"`
+	}
+	json.NewDecoder(resp.Body).Decode(&stats)
 	resp.Body.Close()
+	if len(stats) == 0 {
+		t.Error("expected data with to-only filter, got empty")
+	}
 }
 
 func TestStatsDefaultTimeRange(t *testing.T) {

@@ -297,7 +297,7 @@ View pageview statistics.
 - `--site DOMAIN`: Filter by site domain
 - `--last PERIOD`: Relative time period (24h, 7d, 30d, 1mo, 3mo, 6mo)
 - `--from DATE`: Start date (YYYY-MM-DD). Without --to, goes from this date to now.
-- `--to DATE`:   End date (YYYY-MM-DD). Without --from, goes from all time to this date.
+- `--to DATE`:   End date (YYYY-MM-DD). Without --from, queries all time up to this date. Requires --to alone (do not combine with --from or --last).
 - `--verbose`, `-v`: Show detailed view
 
 **Examples:**
