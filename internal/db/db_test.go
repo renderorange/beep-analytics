@@ -437,7 +437,7 @@ func TestGetAggregateStats(t *testing.T) {
 	}
 }
 
-func TestGetAggregateStatsFromOnly(t *testing.T) {
+func TestGetAggregateStatsToOnly(t *testing.T) {
 	db := setupTestDB(t)
 	site, _ := db.AddSite("example.com")
 	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
@@ -449,14 +449,14 @@ func TestGetAggregateStatsFromOnly(t *testing.T) {
 
 	rows, err := db.GetAggregateStats(q)
 	if err != nil {
-		t.Fatalf("get aggregate stats with zero from: %v", err)
+		t.Fatalf("get aggregate stats with to only: %v", err)
 	}
 	if len(rows) != 1 {
 		t.Errorf("expected 1 stat row, got %d", len(rows))
 	}
 }
 
-func TestGetAggregateStatsToOnly(t *testing.T) {
+func TestGetAggregateStatsFromOnly(t *testing.T) {
 	db := setupTestDB(t)
 	site, _ := db.AddSite("example.com")
 	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
@@ -468,7 +468,7 @@ func TestGetAggregateStatsToOnly(t *testing.T) {
 
 	rows, err := db.GetAggregateStats(q)
 	if err != nil {
-		t.Fatalf("get aggregate stats with zero to: %v", err)
+		t.Fatalf("get aggregate stats with from only: %v", err)
 	}
 	if len(rows) != 1 {
 		t.Errorf("expected 1 stat row, got %d", len(rows))
@@ -551,7 +551,7 @@ func TestGetVerboseStats(t *testing.T) {
 	}
 }
 
-func TestGetVerboseStatsFromOnly(t *testing.T) {
+func TestGetVerboseStatsToOnly(t *testing.T) {
 	db := setupTestDB(t)
 	site, _ := db.AddSite("example.com")
 	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
@@ -563,14 +563,14 @@ func TestGetVerboseStatsFromOnly(t *testing.T) {
 
 	rows, err := db.GetVerboseStats(q)
 	if err != nil {
-		t.Fatalf("get verbose stats with zero from: %v", err)
+		t.Fatalf("get verbose stats with to only: %v", err)
 	}
 	if len(rows) != 1 {
 		t.Errorf("expected 1 row, got %d", len(rows))
 	}
 }
 
-func TestGetVerboseStatsToOnly(t *testing.T) {
+func TestGetVerboseStatsFromOnly(t *testing.T) {
 	db := setupTestDB(t)
 	site, _ := db.AddSite("example.com")
 	db.InsertPageview(models.PageviewInput{SiteID: site.ID, IP: "1.2.3.4", Path: "/"})
@@ -582,7 +582,7 @@ func TestGetVerboseStatsToOnly(t *testing.T) {
 
 	rows, err := db.GetVerboseStats(q)
 	if err != nil {
-		t.Fatalf("get verbose stats with zero to: %v", err)
+		t.Fatalf("get verbose stats with from only: %v", err)
 	}
 	if len(rows) != 1 {
 		t.Errorf("expected 1 row, got %d", len(rows))

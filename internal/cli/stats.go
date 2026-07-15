@@ -16,7 +16,7 @@ Options:
   --site DOMAIN    Filter by site domain
   --last PERIOD    Relative period: 24h, 7d, 30d, 1mo, 3mo, 6mo (default: 24h)
   --from DATE      Start date (YYYY-MM-DD). Without --to, goes to now.
-  --to DATE        End date (YYYY-MM-DD). Without --from, goes from all time.
+  --to DATE        End date (YYYY-MM-DD). Without --from, queries all time up to this date.
   --verbose, -v    Show detailed view
 
 Examples:
